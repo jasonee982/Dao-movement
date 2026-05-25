@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Cycle Stage Monitor</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --blue: #58a6ff;
+      --green: #3fb950;
+      --yellow: #e3b341;
+      --orange: #db6d28;
+      --red: #f85149;
+      --green-bg: #0f2a18;
+      --yellow-bg: #2e2008;
+      --orange-bg: #2e1208;
+      --red-bg: #2e0808;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    a { color: var(--blue); }
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 20px 16px 60px; }
+
+    /* ── Header ── */
+    .header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+      margin-bottom: 24px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; }
+    .header-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+      cursor: pointer; font-size: 0.82rem; font-weight: 500; transition: opacity .15s;
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--blue); color: #0d1117; border-color: var(--blue); }
+    .btn-primary:hover { opacity: .85; }
+    .btn-ghost { background: var(--surface2); color: var(--text); }
+    .btn-ghost:hover { background: var(--border); }
+    .btn-danger { background: transparent; color: var(--red); border-color: var(--red); }
+    .btn-danger:hover { background: var(--red-bg); }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Status bar ── */
+    #statusBar {
+      padding: 8px 12px; border-radius: 6px; font-size: 0.8rem;
+      margin-bottom: 16px; display: none;
+    }
+    #statusBar.info { background: #0d1f3a; border: 1px solid #1f4b7a; color: var(--blue); }
+    #statusBar.ok { background: var(--green-bg); border: 1px solid #1f5a30; color: var(--green); }
+    #statusBar.warn { background: var(--orange-bg); border: 1px solid #5a2e10; color: var(--orange); }
+    #statusBar.err { background: var(--red-bg); border: 1px solid #5a1010; color: var(--red); }
+
+    /* ── Section header ── */
+    .sec-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .sec-label {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--muted);
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px;
+    }
+
+    /* ── Market inputs grid ── */
+    .markets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    @media(max-width:640px){ .markets-grid { grid-template-columns: 1fr; } }
+
+    .card-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--muted); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .input-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px solid var(--border);
+      gap: 8px;
+    }
+    .input-row:last-of-type { border-bottom: none; }
+    .inp-label { color: var(--muted); font-size: 0.82rem; flex: 1; }
+    .inp-unit { font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
+    input[type=number] {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 4px 8px; border-radius: 4px;
+      font-size: 0.82rem; width: 88px; text-align: right;
+      -moz-appearance: textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    input[type=number]:focus { outline: none; border-color: var(--blue); }
+    .inp-fetched { border-color: #1f4b7a !important; }
+    .card-note { font-size: 0.72rem; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+
+    /* ── Diagnostic tabs ── */
+    .tabs { display: flex; gap: 4px; }
+    .tab {
+      padding: 4px 12px; border-radius: 6px; font-size: 0.8rem;
+      cursor: pointer; background: transparent; border: 1px solid var(--border);
+      color: var(--muted); transition: all .15s;
+    }
+    .tab.active { background: var(--surface2); color: var(--text); border-color: var(--blue); }
+
+    /* ── 4-question grid ── */
+    .q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    @media(max-width:640px){ .q-grid { grid-template-columns: 1fr; } }
+
+    .q-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .q-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .q-num { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+    .q-title { font-size: 0.9rem; font-weight: 600; margin-top: 2px; }
+    .q-val { font-size: 1.4rem; font-weight: 700; margin: 6px 0; font-variant-numeric: tabular-nums; }
+
+    /* signal badge */
+    .badge {
+      display: inline-block; padding: 2px 9px; border-radius: 20px;
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; white-space: nowrap; border: 1px solid;
+    }
+    .badge-1 { background: var(--green-bg); color: var(--green); border-color: #1f5a30; }
+    .badge-2 { background: var(--yellow-bg); color: var(--yellow); border-color: #5a4010; }
+    .badge-3 { background: var(--orange-bg); color: var(--orange); border-color: #5a2e10; }
+    .badge-4 { background: var(--red-bg); color: var(--red); border-color: #5a1010; }
+    .badge-0 { background: var(--surface2); color: var(--muted); border-color: var(--border); }
+
+    /* segment gauge */
+    .seg-bar { display: flex; gap: 3px; height: 6px; border-radius: 3px; overflow: hidden; margin: 8px 0 4px; }
+    .seg { flex: 1; border-radius: 2px; opacity: .2; transition: opacity .3s; }
+    .seg.on { opacity: 1; }
+    .seg-g { background: var(--green); }
+    .seg-y { background: var(--yellow); }
+    .seg-o { background: var(--orange); }
+    .seg-r { background: var(--red); }
+    .seg-labels { display: flex; justify-content: space-between; font-size: 0.64rem; color: var(--muted); }
+    .q-interp { font-size: 0.78rem; color: var(--muted); margin-top: 8px; line-height: 1.45; }
+
+    /* ── Composite needle bar ── */
+    .needle-wrap {
+      position: relative; height: 10px;
+      background: linear-gradient(to right, var(--green), var(--yellow) 33%, var(--orange) 66%, var(--red));
+      border-radius: 5px; margin: 10px 0 6px;
+    }
+    .needle {
+      position: absolute; top: -5px;
+      width: 20px; height: 20px;
+      background: var(--text); border: 3px solid var(--bg);
+      border-radius: 50%; transform: translateX(-50%);
+      transition: left .5s ease; box-shadow: 0 0 6px rgba(0,0,0,.6);
+    }
+
+    /* ── Verdict banner ── */
+    .verdict {
+      border-radius: 12px; padding: 22px 24px; margin-bottom: 20px;
+      border: 2px solid; display: none;
+    }
+    .verdict-stage { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 6px; }
+    .verdict-title { font-size: 1.7rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
+    .verdict-desc { font-size: 0.88rem; opacity: .9; line-height: 1.6; max-width: 620px; }
+    .verdict-posture {
+      display: inline-block; margin-top: 12px; padding: 5px 14px;
+      background: rgba(0,0,0,.25); border-radius: 20px;
+      font-size: 0.82rem; font-weight: 600;
+    }
+    .v-bull { background: #0a2416; border-color: var(--green); color: var(--green); }
+    .v-mid  { background: #0a1b2e; border-color: var(--blue);  color: var(--blue); }
+    .v-late { background: #2a1508; border-color: var(--orange); color: var(--orange); }
+    .v-risk { background: #2a0808; border-color: var(--red);    color: var(--red); }
+
+    /* ── Watch list ── */
+    #watchCard { margin-bottom: 20px; display: none; }
+    .watch-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .watch-item:last-child { border-bottom: none; }
+    .watch-icon { flex-shrink: 0; }
+
+    /* ── Save + history ── */
+    .save-row { display: flex; justify-content: center; margin-bottom: 24px; }
+    .history-list { list-style: none; }
+    .h-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; margin-bottom: 7px; flex-wrap: wrap;
+    }
+    .h-date { color: var(--muted); font-size: 0.72rem; min-width: 130px; }
+    .h-dots { display: flex; gap: 4px; align-items: center; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-0 { background: var(--surface2); border: 1px solid var(--border); }
+    .h-verdict { font-weight: 600; flex: 1; font-size: 0.85rem; }
+    .h-score { color: var(--muted); font-size: 0.72rem; }
+    .h-market { font-size: 0.78rem; }
+    .h-empty { color: var(--muted); font-size: 0.82rem; text-align: center; padding: 24px; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      margin-top: 32px; padding: 10px 14px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.72rem; color: var(--muted); text-align: center; line-height: 1.5;
+    }
+
+    /* ── Spinner ── */
+    .spin {
+      display: inline-block; width: 12px; height: 12px;
+      border: 2px solid var(--border); border-top-color: var(--blue);
+      border-radius: 50%; animation: rot .7s linear infinite;
+    }
+    @keyframes rot { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Market Cycle Stage Monitor</h1>
+      <div class="header-sub" id="lastUpdated">Not yet refreshed &mdash; click Refresh or enter data manually</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="scrollToHistory()">History</button>
+      <button class="btn btn-primary" id="fetchBtn" onclick="fetchAll()">
+        <span>&#8635;</span> Refresh Data
+      </button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div id="statusBar"></div>
+
+  <!-- Market Inputs -->
+  <div class="sec-head" style="margin-bottom:12px;">
+    <span class="sec-label">Market Indicators</span>
+    <span style="font-size:0.72rem;color:var(--muted);">Blue border = auto-fetched &nbsp;|&nbsp; Edit any field manually</span>
+  </div>
+  <div class="markets-grid">
+
+    <!-- US -->
+    <div class="card">
+      <div class="card-title">&#127482;&#127480; United States</div>
+      <div class="input-row">
+        <span class="inp-label">10Y Treasury Yield</span>
+        <input type="number" id="us10y" placeholder="4.50" step="0.01" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">10Y Yield &mdash; 3 months ago</span>
+        <input type="number" id="us10yPrev" placeholder="4.25" step="0.01" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">S&amp;P 500</span>
+        <input type="number" id="sp500" placeholder="5300" oninput="runDiag()"> <span class="inp-unit">pts</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">S&amp;P 500 &mdash; 6-month change</span>
+        <input type="number" id="sp6m" placeholder="8.5" step="0.1" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">Gold (USD / oz)</span>
+        <input type="number" id="goldUsd" placeholder="2450" oninput="runDiag()"> <span class="inp-unit">USD</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">Gold &mdash; 6-month change</span>
+        <input type="number" id="gold6m" placeholder="12.0" step="0.1" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <p class="card-note">3-month yield history: <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">FRED DGS10</a></p>
+    </div>
+
+    <!-- Malaysia -->
+    <div class="card">
+      <div class="card-title">&#127474;&#127486; Malaysia</div>
+      <div class="input-row">
+        <span class="inp-label">MGS 10Y Yield</span>
+        <input type="number" id="mgs10y" placeholder="3.90" step="0.01" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">MGS 10Y &mdash; 3 months ago</span>
+        <input type="number" id="mgs10yPrev" placeholder="3.75" step="0.01" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">KLCI</span>
+        <input type="number" id="klci" placeholder="1580" oninput="runDiag()"> <span class="inp-unit">pts</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">KLCI &mdash; 6-month change</span>
+        <input type="number" id="klci6m" placeholder="3.5" step="0.1" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">USD / MYR</span>
+        <input type="number" id="usdmyr" placeholder="4.65" step="0.01" oninput="runDiag()"> <span class="inp-unit">MYR</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">Gold (MYR / oz)</span>
+        <input type="number" id="goldMyr" placeholder="11500" oninput="runDiag()"> <span class="inp-unit">MYR</span>
+      </div>
+      <p class="card-note">MGS data: <a href="https://www.bnm.gov.my/monetary-stability/money-market-operations" target="_blank">bnm.gov.my</a> &nbsp;&bull;&nbsp; Gold data auto-derived from USD &times; rate</p>
+    </div>
+
+  </div><!-- /markets-grid -->
+
+  <!-- Diagnostic -->
+  <div class="sec-head">
+    <span class="sec-label">4-Question Diagnostic</span>
+    <div class="tabs">
+      <button class="tab active" id="tabUS" onclick="setMkt('US')">&#127482;&#127480; US</button>
+      <button class="tab" id="tabMY" onclick="setMkt('MY')">&#127474;&#127486; Malaysia</button>
+    </div>
+  </div>
+
+  <div class="q-grid">
+
+    <!-- Q1 -->
+    <div class="q-card">
+      <div class="q-head">
+        <div>
+          <div class="q-num">Q1 &mdash; Risk-Free Rate</div>
+          <div class="q-title">Where is the 10-year yield?</div>
+        </div>
+        <span class="badge badge-0" id="q1badge">–</span>
+      </div>
+      <div class="q-val" id="q1val">–</div>
+      <div class="seg-bar">
+        <div class="seg seg-g" id="q1s1"></div>
+        <div class="seg seg-y" id="q1s2"></div>
+        <div class="seg seg-o" id="q1s3"></div>
+        <div class="seg seg-r" id="q1s4"></div>
+      </div>
+      <div class="seg-labels"><span>Low &lt;3%</span><span>3–4%</span><span>4–5%</span><span>5%+</span></div>
+      <div class="q-interp" id="q1interp">Enter market data above to run the diagnostic.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q-card">
+      <div class="q-head">
+        <div>
+          <div class="q-num">Q2 &mdash; Bond Direction</div>
+          <div class="q-title">Are bond prices stable or falling?</div>
+        </div>
+        <span class="badge badge-0" id="q2badge">–</span>
+      </div>
+      <div class="q-val" id="q2val">–</div>
+      <div class="seg-bar">
+        <div class="seg seg-g" id="q2s1"></div>
+        <div class="seg seg-y" id="q2s2"></div>
+        <div class="seg seg-o" id="q2s3"></div>
+        <div class="seg seg-r" id="q2s4"></div>
+      </div>
+      <div class="seg-labels"><span>Falling</span><span>Stable</span><span>Rising</span><span>Surging</span></div>
+      <div class="q-interp" id="q2interp">Enter the 3-month-ago yield to calculate the trend.</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q-card">
+      <div class="q-head">
+        <div>
+          <div class="q-num">Q3 &mdash; Capital Flows</div>
+          <div class="q-title">Where is the money flowing?</div>
+        </div>
+        <span class="badge badge-0" id="q3badge">–</span>
+      </div>
+      <div class="q-val" id="q3val">–</div>
+      <div class="seg-bar">
+        <div class="seg seg-g" id="q3s1"></div>
+        <div class="seg seg-y" id="q3s2"></div>
+        <div class="seg seg-o" id="q3s3"></div>
+        <div class="seg seg-r" id="q3s4"></div>
+      </div>
+      <div class="seg-labels"><span>EQ leads</span><span>Healthy</span><span>Mixed</span><span>Both rally</span></div>
+      <div class="q-interp" id="q3interp">Enter 6-month changes for equities and gold.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q-card">
+      <div class="q-head">
+        <div>
+          <div class="q-num">Q4 &mdash; Rally Character</div>
+          <div class="q-title">Active (fundamentals) or passive?</div>
+        </div>
+        <span class="badge badge-0" id="q4badge">–</span>
+      </div>
+      <div class="q-val" id="q4val">–</div>
+      <div class="seg-bar">
+        <div class="seg seg-g" id="q4s1"></div>
+        <div class="seg seg-y" id="q4s2"></div>
+        <div class="seg seg-o" id="q4s3"></div>
+        <div class="seg seg-r" id="q4s4"></div>
+      </div>
+      <div class="seg-labels"><span>Active</span><span>Healthy</span><span>Passive</span><span>Gold leads</span></div>
+      <div class="q-interp" id="q4interp">Enter index price and gold price to compute ratio.</div>
+    </div>
+
+  </div><!-- /q-grid -->
+
+  <!-- Composite score bar -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-title">Composite Stress Score</div>
+    <div class="needle-wrap">
+      <div class="needle" id="needle" style="left:2%"></div>
+    </div>
+    <div class="seg-labels" style="margin-top:2px;">
+      <span>Early Bull</span><span>Mid-Cycle</span><span>Late-Cycle</span><span>Risk-Off</span>
+    </div>
+    <div style="margin-top:10px;font-size:0.8rem;color:var(--muted)" id="scoreNote">—</div>
+  </div>
+
+  <!-- Verdict -->
+  <div class="verdict" id="verdictCard">
+    <div class="verdict-stage" id="vStage"></div>
+    <div class="verdict-title" id="vTitle"></div>
+    <div class="verdict-desc" id="vDesc"></div>
+    <div class="verdict-posture" id="vPosture"></div>
+  </div>
+
+  <!-- What to Watch -->
+  <div class="card" id="watchCard">
+    <div class="card-title">What To Watch</div>
+    <ul class="history-list" id="watchList"></ul>
+  </div>
+
+  <!-- Save button -->
+  <div class="save-row" style="margin-top:20px;">
+    <button class="btn btn-primary" id="saveBtn" onclick="saveReading()" style="padding:9px 28px;font-size:0.9rem;">
+      &#128190; Save This Reading
+    </button>
+  </div>
+
+  <!-- History -->
+  <div id="historySection">
+    <div class="sec-head" style="margin-top:8px;">
+      <span class="sec-label">Reading History</span>
+      <button class="btn btn-danger" onclick="clearHistory()" style="padding:4px 10px;font-size:0.75rem;">Clear All</button>
+    </div>
+    <ul class="history-list" id="historyList">
+      <div class="h-empty">No readings saved yet.</div>
+    </ul>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="disclaimer">
+    This tool applies a capital-rotation diagnostic framework &mdash; it is <strong>not financial advice</strong>.
+    Always verify data independently. Consult a licensed financial professional before making investment decisions.
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let diagMkt = 'US';
+let lastScores = null;
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+const $  = id => document.getElementById(id);
+const fld = id => { const v = parseFloat($(id)?.value); return isNaN(v) ? null : v; };
+const setVal = (id, v, fetched = false) => {
+  const el = $(id);
+  if (!el) return;
+  el.value = v ?? '';
+  el.classList.toggle('inp-fetched', !!fetched);
+};
+
+function showStatus(msg, type) {
+  const b = $('statusBar');
+  b.textContent = msg;
+  b.className = type;
+  b.style.display = 'block';
+}
+function hideStatus() { $('statusBar').style.display = 'none'; }
+
+// ─────────────────────────────────────────────
+//  DATA FETCH — Yahoo Finance via CORS proxies
+// ─────────────────────────────────────────────
+const PROXIES = [
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+];
+
+async function tryFetch(url) {
+  // direct attempt
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    if (r.ok) return await r.json();
+  } catch (_) {}
+
+  for (const px of PROXIES) {
+    try {
+      const r = await fetch(px(url), { signal: AbortSignal.timeout(6000) });
+      if (!r.ok) continue;
+      const txt = await r.text();
+      const obj = JSON.parse(txt);
+      // allorigins wraps in { contents }
+      if (obj?.contents) return JSON.parse(obj.contents);
+      return obj;
+    } catch (_) {}
+  }
+  return null;
+}
+
+async function yfSeries(symbol) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1wk&range=1y`;
+  const data = await tryFetch(url);
+  const res = data?.chart?.result?.[0];
+  if (!res) return null;
+
+  const meta = res.meta;
+  const ts   = res.timestamp || [];
+  const raw  = res.indicators?.quote?.[0]?.close || [];
+  const pts  = ts.map((t, i) => ({ t, c: raw[i] })).filter(p => p.c != null);
+
+  const now = Date.now() / 1000;
+  const getAt = secAgo => {
+    const target = now - secAgo;
+    let best = null, bestD = Infinity;
+    for (const { t, c } of pts) {
+      const d = Math.abs(t - target);
+      if (d < bestD && t <= target + 7 * 86400) { bestD = d; best = c; }
+    }
+    return best;
+  };
+
+  const cur     = meta.regularMarketPrice;
+  const p3m     = getAt(90  * 86400);
+  const p6m     = getAt(182 * 86400);
+  const ytdDate = new Date(new Date().getFullYear(), 0, 2);
+  const pYtd    = getAt((now - ytdDate.getTime() / 1000));
+
+  const pct = (a, b) => b ? +((a - b) / b * 100).toFixed(2) : null;
+
+  return {
+    price:    cur,
+    chg1d:    pct(cur, meta.chartPreviousClose),
+    chg3m:    pct(cur, p3m),
+    chg6m:    pct(cur, p6m),
+    chgYtd:   pct(cur, pYtd),
+    p3m,
+    high52:   meta.fiftyTwoWeekHigh,
+    low52:    meta.fiftyTwoWeekLow,
+  };
+}
+
+async function fetchAll() {
+  const btn = $('fetchBtn');
+  btn.innerHTML = '<span class="spin"></span> Fetching…';
+  btn.disabled = true;
+  showStatus('Fetching live data from Yahoo Finance…', 'info');
+
+  const syms = {
+    us10y:  '^TNX',
+    sp500:  '^GSPC',
+    gold:   'GC=F',
+    klci:   '^KLSE',
+    usdmyr: 'USDMYR=X',
+  };
+
+  const results = {};
+  await Promise.all(
+    Object.entries(syms).map(async ([k, sym]) => {
+      results[k] = await yfSeries(sym);
+    })
+  );
+
+  let ok = 0, fail = 0;
+
+  const populate = (key, id, transform, fetched = true) => {
+    const d = results[key];
+    if (!d) { fail++; return; }
+    const v = transform(d);
+    if (v != null) { setVal(id, typeof v === 'number' ? +v.toFixed(3) : v, fetched); ok++; }
+  };
+
+  populate('us10y',  'us10y',    d => d.price);
+  populate('us10y',  'us10yPrev', d => d.p3m ? +d.p3m.toFixed(2) : null);
+  populate('sp500',  'sp500',    d => Math.round(d.price));
+  populate('sp500',  'sp6m',     d => d.chg6m);
+  populate('gold',   'goldUsd',  d => Math.round(d.price));
+  populate('gold',   'gold6m',   d => d.chg6m);
+  populate('klci',   'klci',     d => Math.round(d.price));
+  populate('klci',   'klci6m',   d => d.chg6m);
+  populate('usdmyr', 'usdmyr',   d => d.price);
+
+  // Derive gold MYR
+  if (results.gold && results.usdmyr) {
+    const gMyr = results.gold.price * results.usdmyr.price;
+    setVal('goldMyr', Math.round(gMyr), true);
+  }
+
+  const now = new Date();
+  $('lastUpdated').textContent = `Last updated: ${now.toLocaleString('en-MY')}`;
+
+  if (ok > 0 && fail === 0) showStatus(`✓ All data loaded. (${ok} fields)`, 'ok');
+  else if (ok > 0) showStatus(`Partial data loaded (${ok} fields). ${fail} symbol(s) failed — enter missing values manually.`, 'warn');
+  else showStatus('Could not fetch live data (CORS blocked or network error). Enter values manually.', 'err');
+
+  btn.innerHTML = '&#8635; Refresh Data';
+  btn.disabled = false;
+  runDiag();
+}
+
+// ─────────────────────────────────────────────
+//  DIAGNOSTIC ENGINE
+// ─────────────────────────────────────────────
+function setQ(n, score, label, value, interp) {
+  const cls = score ? `badge-${score}` : 'badge-0';
+  $(`q${n}badge`).textContent  = label;
+  $(`q${n}badge`).className    = `badge ${cls}`;
+  $(`q${n}val`).textContent    = value;
+  $(`q${n}interp`).textContent = interp;
+  for (let i = 1; i <= 4; i++)
+    $(`q${n}s${i}`).classList.toggle('on', i === score);
+}
+
+function runDiag() {
+  const isUS = diagMkt === 'US';
+
+  const yield10y   = isUS ? fld('us10y')    : fld('mgs10y');
+  const yieldPrev  = isUS ? fld('us10yPrev'): fld('mgs10yPrev');
+  const eq6m       = isUS ? fld('sp6m')     : fld('klci6m');
+  const gold6m     = fld('gold6m');
+  const eqPrice    = isUS ? fld('sp500')    : fld('klci');
+  const goldPrice  = fld('goldUsd');
+
+  // ── Q1: Risk-free rate level ──
+  let q1 = null, q1lbl = '–', q1val = '–', q1txt = 'Enter market data to run the diagnostic.';
+  if (yield10y !== null) {
+    q1val = `${yield10y.toFixed(2)}%`;
+    if (yield10y < 3.0) {
+      q1 = 1; q1lbl = 'Supportive';
+      q1txt = `At ${yield10y}% the risk-free rate is low — equity valuations are supported and borrowing is cheap. Capital seeks growth.`;
+    } else if (yield10y < 4.0) {
+      q1 = 2; q1lbl = 'Moderate';
+      q1txt = `At ${yield10y}%, rates are moderate. Some valuation headwind exists but not enough to choke off equity demand.`;
+    } else if (yield10y < 5.0) {
+      q1 = 3; q1lbl = 'Elevated';
+      q1txt = `At ${yield10y}%, the risk-free rate competes seriously with equities. Valuation multiples are under pressure.`;
+    } else {
+      q1 = 4; q1lbl = 'High Pressure';
+      q1txt = `At ${yield10y}%, the risk-free rate is in active compression territory. High-quality bonds now rival equity returns.`;
+    }
+  }
+  setQ(1, q1, q1lbl, q1val, q1txt);
+
+  // ── Q2: Bond direction (yield trend) ──
+  let q2 = null, q2lbl = '–', q2val = '–', q2txt = 'Enter the 3-month-ago yield to see the bond trend.';
+  if (yield10y !== null && yieldPrev !== null) {
+    const delta = +(yield10y - yieldPrev).toFixed(2);
+    q2val = `${delta >= 0 ? '+' : ''}${delta}%`;
+    if (delta < -0.25) {
+      q2 = 1; q2lbl = 'Falling';
+      q2txt = `Yield has fallen ${Math.abs(delta)}% over 3 months — bond prices rising. A supportive environment for equities.`;
+    } else if (delta <= 0.25) {
+      q2 = 2; q2lbl = 'Stable';
+      q2txt = `Yield is roughly flat (${q2val} over 3 months). No significant bond market stress.`;
+    } else if (delta <= 0.75) {
+      q2 = 3; q2lbl = 'Rising';
+      q2txt = `Yield has risen ${delta}% over 3 months — bond prices falling. Adds stress to valuations and leveraged positions.`;
+    } else {
+      q2 = 4; q2lbl = 'Surging';
+      q2txt = `Yield has surged ${delta}% over 3 months — even the "risk-free" asset is unsafe. A key late-cycle stress signal.`;
+    }
+  } else if (yield10y !== null) {
+    q2txt = 'Enter the 3-month-ago yield to calculate trend direction.';
+  }
+  setQ(2, q2, q2lbl, q2val, q2txt);
+
+  // ── Q3: Capital flows (both equities and gold rallying?) ──
+  let q3 = null, q3lbl = '–', q3val = '–', q3txt = 'Enter 6-month changes for equities and gold.';
+  if (eq6m !== null && gold6m !== null) {
+    q3val = `EQ ${eq6m > 0 ? '+' : ''}${eq6m.toFixed(1)}%  /  AU ${gold6m > 0 ? '+' : ''}${gold6m.toFixed(1)}%`;
+    const eqStrong   = eq6m   > 7;
+    const goldStrong = gold6m > 7;
+    const goldDominating = gold6m > eq6m + 8;
+
+    if (eqStrong && !goldStrong) {
+      q3 = 1; q3lbl = 'Equities Lead';
+      q3txt = `Equities up ${eq6m.toFixed(1)}% (6m), gold flat/lagging. Capital flowing into risk assets — textbook healthy rotation.`;
+    } else if (eqStrong && goldStrong) {
+      q3 = 3; q3lbl = 'Both Rallying';
+      q3txt = `Equities (+${eq6m.toFixed(1)}%) AND gold (+${gold6m.toFixed(1)}%) both surging. The market is hedging both directions — a late-cycle contradiction.`;
+    } else if (goldDominating || (goldStrong && !eqStrong)) {
+      q3 = 4; q3lbl = 'Gold Dominates';
+      q3txt = `Gold (+${gold6m.toFixed(1)}%) outperforming equities (+${eq6m.toFixed(1)}%). Capital seeking haven — risk-off developing.`;
+    } else {
+      q3 = 2; q3lbl = 'Mixed';
+      q3txt = `Neither equities nor gold showing strong directional leadership. Wait for a clearer signal.`;
+    }
+  }
+  setQ(3, q3, q3lbl, q3val, q3txt);
+
+  // ── Q4: Active vs passive ──
+  let q4 = null, q4lbl = '–', q4val = '–', q4txt = 'Enter index price and gold price to compute the ratio.';
+  if (isUS && eqPrice !== null && goldPrice !== null) {
+    const ratio = +(eqPrice / goldPrice).toFixed(2);
+    q4val = `S&P / Gold = ${ratio}`;
+    if (ratio > 2.5) {
+      q4 = 1; q4lbl = 'Active Rally';
+      q4txt = `S&P/Gold ratio ${ratio} — equities strongly outpace gold. Rally is fundamentals-driven. Healthy signal.`;
+    } else if (ratio > 1.7) {
+      q4 = 2; q4lbl = 'Healthy';
+      q4txt = `S&P/Gold ratio ${ratio} — equities modestly ahead. Normal mid-cycle posture.`;
+    } else if (ratio > 1.0) {
+      q4 = 3; q4lbl = 'Passive Rally';
+      q4txt = `S&P/Gold ratio ${ratio} — gold is keeping pace with equities. The rally has a significant "nowhere to go" component. Fragile.`;
+    } else {
+      q4 = 4; q4lbl = 'Gold Leads';
+      q4txt = `S&P/Gold ratio ${ratio} — gold dominates. Historically below 1.7 signals stress (1970s stagflation, 2008, 2020).`;
+    }
+    setQ(4, q4, q4lbl, q4val, q4txt);
+  } else if (!isUS && eq6m !== null && gold6m !== null) {
+    // Malaysia: relative performance
+    const outperf = +(eq6m - gold6m).toFixed(1);
+    q4val = `KLCI vs Gold: ${outperf > 0 ? '+' : ''}${outperf}%`;
+    if (outperf > 6) {
+      q4 = 1; q4lbl = 'Active Rally';
+      q4txt = `KLCI outperforming gold by ${outperf}% (6m). Local equities lead — active, fundamentals-driven environment.`;
+    } else if (outperf > 0) {
+      q4 = 2; q4lbl = 'Healthy';
+      q4txt = `KLCI modestly ahead of gold (+${outperf}%). Normal; no strong passive signal.`;
+    } else if (outperf > -8) {
+      q4 = 3; q4lbl = 'Passive Rally';
+      q4txt = `Gold outperforming KLCI by ${Math.abs(outperf)}%. Passive/fear component growing in returns.`;
+    } else {
+      q4 = 4; q4lbl = 'Gold Leads';
+      q4txt = `Gold significantly outperforming KLCI by ${Math.abs(outperf)}%. Risk-off regime.`;
+    }
+    setQ(4, q4, q4lbl, q4val, q4txt);
+  } else {
+    setQ(4, null, '–', '–', isUS
+      ? 'Enter S&P 500 and gold price to compute the ratio.'
+      : 'Enter KLCI and gold 6-month changes for relative performance.');
+  }
+
+  // ── Composite ──
+  const scores = [q1, q2, q3, q4].filter(s => s !== null);
+  if (scores.length >= 2) {
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    lastScores = { q1, q2, q3, q4, avg, n: scores.length };
+
+    const pct = Math.min(96, Math.max(4, ((avg - 1) / 3) * 100));
+    $('needle').style.left = `${pct}%`;
+    $('scoreNote').textContent =
+      `Composite score: ${avg.toFixed(2)} / 4.00   (based on ${scores.length}/4 questions)`;
+
+    renderVerdict(avg, scores.length);
+  } else {
+    lastScores = null;
+    $('scoreNote').textContent = 'Enter data for at least 2 questions to see a verdict.';
+    $('verdictCard').style.display = 'none';
+    $('watchCard').style.display = 'none';
+  }
+}
+
+// ─────────────────────────────────────────────
+//  VERDICT
+// ─────────────────────────────────────────────
+const STAGES = [
+  {
+    max: 1.75,
+    cls: 'v-bull',
+    stage: 'Stage 1 — Early Bull',
+    title: 'Early Bull Market',
+    desc:  'Low rates, bonds stable, money entering equities, gold quiet. The environment is supportive of risk-taking. Capital is rotating into equities for fundamental reasons — earnings and growth expectations drive prices.',
+    posture: '🚀 Posture: Aggressive — lean into risk assets',
+    watch: [
+      '📈 Yield breakout above 3% would signal transition toward mid-cycle',
+      '🥇 Gold starting to rally alongside equities = early passive signal',
+      '📊 Confirm the rally is earnings-driven, not liquidity-driven',
+    ],
+  },
+  {
+    max: 2.5,
+    cls: 'v-mid',
+    stage: 'Stage 2 — Mid-Cycle',
+    title: 'Healthy Mid-Cycle',
+    desc:  'Rates moderate, equities leading, gold neglected. The rally appears active and fundamentals-driven. This is the most comfortable phase of the cycle — momentum is real, and there is no urgent need to hedge.',
+    posture: '📈 Posture: Trend-follow — stay invested, no urgency to hedge',
+    watch: [
+      '📉 10Y yield creeping above 4.5% starts compressing P/E multiples',
+      '🥇 Gold beginning to keep pace with equities = first passive signal',
+      '🏦 Credit spreads widening = early warning of systemic stress',
+    ],
+  },
+  {
+    max: 3.25,
+    cls: 'v-late',
+    stage: 'Stage 3 — Late-Cycle Defensive Rally',
+    title: 'Late-Cycle Defensive Rally',
+    desc:  'Rates high, bonds sold off, equities AND gold both elevated — the rally has a large "nowhere to go" component. This is a passive, fragile environment. The party continues, but someone is eyeing the exits.',
+    posture: '⚠️ Posture: Trend-follow with tight stops — hand near the exit',
+    watch: [
+      '🚨 10Y yield breaking above 5% → active valuation compression begins',
+      '🥇 Gold/equity ratio accelerating → escalating fear, possible phase shift to Risk-Off',
+      '📊 Watch earnings guidance for first signs of margin compression',
+    ],
+  },
+  {
+    max: 4.01,
+    cls: 'v-risk',
+    stage: 'Stage 4 — Risk-Off',
+    title: 'Risk-Off / Correction',
+    desc:  'Equities rolling over, money fleeing to gold (and possibly cash) rather than bonds. The passive rally has ended; active selling may be underway. Preservation of capital takes priority over return-seeking.',
+    posture: '🛡️ Posture: Defensive — cash, gold, short-duration bonds',
+    watch: [
+      '💵 Yield collapse (flight to bonds) signals peak fear / capitulation point',
+      '📉 Watch key support levels on major indices for stabilisation',
+      '🏦 Central bank pivot communication is the main re-entry signal',
+    ],
+  },
+];
+
+function renderVerdict(avg, n) {
+  const s = STAGES.find(x => avg < x.max);
+  if (!s) return;
+
+  const card = $('verdictCard');
+  card.className = `verdict ${s.cls}`;
+  card.style.display = 'block';
+  $('vStage').textContent   = s.stage;
+  $('vTitle').textContent   = s.title;
+  $('vDesc').textContent    = s.desc;
+  $('vPosture').textContent = s.posture;
+
+  const wl = $('watchList');
+  wl.innerHTML = s.watch.map(w =>
+    `<li class="watch-item"><span class="watch-icon">${w.charAt(0)}</span><span>${w.slice(2)}</span></li>`
+  ).join('');
+
+  if (n < 4) {
+    wl.insertAdjacentHTML('beforeend',
+      `<li class="watch-item" style="border-top:1px solid var(--border);margin-top:6px;padding-top:10px;">
+        <span class="watch-icon">ℹ️</span>
+        <span style="color:var(--muted)">Verdict based on ${n}/4 questions — enter more data for a complete picture.</span>
+      </li>`
+    );
+  }
+  $('watchCard').style.display = 'block';
+}
+
+// ─────────────────────────────────────────────
+//  MARKET TAB
+// ─────────────────────────────────────────────
+function setMkt(mkt) {
+  diagMkt = mkt;
+  $('tabUS').classList.toggle('active', mkt === 'US');
+  $('tabMY').classList.toggle('active', mkt === 'MY');
+  runDiag();
+}
+
+// ─────────────────────────────────────────────
+//  HISTORY
+// ─────────────────────────────────────────────
+const LS_KEY = 'mcs_v1';
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
+}
+
+function verdictLabel(avg) {
+  return STAGES.find(s => avg < s.max)?.title ?? '—';
+}
+
+function verdictColor(label) {
+  if (label.includes('Early'))  return 'var(--green)';
+  if (label.includes('Mid'))    return 'var(--blue)';
+  if (label.includes('Late'))   return 'var(--orange)';
+  return 'var(--red)';
+}
+
+const DOT_COLORS = ['var(--green)', 'var(--yellow)', 'var(--orange)', 'var(--red)'];
+
+function saveReading() {
+  if (!lastScores) {
+    alert('Run the diagnostic first by entering data above.');
+    return;
+  }
+  const rec = {
+    ts:      new Date().toISOString(),
+    mkt:     diagMkt,
+    scores:  lastScores,
+    verdict: verdictLabel(lastScores.avg),
+    snap: {
+      us10y:   fld('us10y'),   sp500:   fld('sp500'),
+      goldUsd: fld('goldUsd'), mgs10y:  fld('mgs10y'),
+      klci:    fld('klci'),    usdmyr:  fld('usdmyr'),
+    },
+  };
+  const h = getHistory();
+  h.unshift(rec);
+  if (h.length > 60) h.length = 60;
+  localStorage.setItem(LS_KEY, JSON.stringify(h));
+  renderHistory();
+
+  const b = $('saveBtn');
+  b.textContent = '✓ Saved!';
+  setTimeout(() => { b.innerHTML = '&#128190; Save This Reading'; }, 2000);
+}
+
+function renderHistory() {
+  const h = getHistory();
+  const el = $('historyList');
+  if (!h.length) {
+    el.innerHTML = '<div class="h-empty">No readings saved yet. Run the diagnostic and click "Save This Reading".</div>';
+    return;
+  }
+  el.innerHTML = h.map(r => {
+    const d   = new Date(r.ts);
+    const fmt = d.toLocaleString('en-MY', { dateStyle: 'medium', timeStyle: 'short' });
+    const qs  = [r.scores.q1, r.scores.q2, r.scores.q3, r.scores.q4];
+    const dots = qs.map(q =>
+      q ? `<span class="dot" style="background:${DOT_COLORS[q-1]}"></span>`
+        : `<span class="dot dot-0"></span>`
+    ).join('');
+    const color = verdictColor(r.verdict);
+    const flag  = r.mkt === 'US' ? '🇺🇸' : '🇲🇾';
+    return `<li class="h-item">
+      <span class="h-date">${fmt}</span>
+      <span class="h-dots">${dots}</span>
+      <span class="h-verdict" style="color:${color}">${r.verdict}</span>
+      <span class="h-score">avg ${r.scores.avg.toFixed(2)}</span>
+      <span class="h-market">${flag}</span>
+    </li>`;
+  }).join('');
+}
+
+function clearHistory() {
+  if (confirm('Clear all saved readings?')) {
+    localStorage.removeItem(LS_KEY);
+    renderHistory();
+  }
+}
+
+function scrollToHistory() {
+  $('historySection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderHistory();
+  fetchAll();
+});
+</script>
+</body>
+</html>
