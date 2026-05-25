@@ -46,7 +46,7 @@
       display: inline-flex; align-items: center; gap: 6px;
       padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
       cursor: pointer; font-size: 0.82rem; font-weight: 500; transition: opacity .15s;
-      text-decoration: none;
+      text-decoration: none; white-space: nowrap;
     }
     .btn-primary { background: var(--blue); color: #0d1117; border-color: var(--blue); }
     .btn-primary:hover { opacity: .85; }
@@ -62,25 +62,16 @@
       margin-bottom: 16px; display: none;
     }
     #statusBar.info { background: #0d1f3a; border: 1px solid #1f4b7a; color: var(--blue); }
-    #statusBar.ok { background: var(--green-bg); border: 1px solid #1f5a30; color: var(--green); }
+    #statusBar.ok   { background: var(--green-bg); border: 1px solid #1f5a30; color: var(--green); }
     #statusBar.warn { background: var(--orange-bg); border: 1px solid #5a2e10; color: var(--orange); }
-    #statusBar.err { background: var(--red-bg); border: 1px solid #5a1010; color: var(--red); }
+    #statusBar.err  { background: var(--red-bg); border: 1px solid #5a1010; color: var(--red); }
 
     /* ── Section header ── */
-    .sec-head {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .sec-label {
-      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .1em; color: var(--muted);
-    }
+    .sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .sec-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
 
     /* ── Cards ── */
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; padding: 16px;
-    }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
 
     /* ── Market inputs grid ── */
     .markets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
@@ -93,8 +84,7 @@
     }
     .input-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 0; border-bottom: 1px solid var(--border);
-      gap: 8px;
+      padding: 6px 0; border-bottom: 1px solid var(--border); gap: 8px;
     }
     .input-row:last-of-type { border-bottom: none; }
     .inp-label { color: var(--muted); font-size: 0.82rem; flex: 1; }
@@ -129,7 +119,6 @@
     .q-title { font-size: 0.9rem; font-weight: 600; margin-top: 2px; }
     .q-val { font-size: 1.4rem; font-weight: 700; margin: 6px 0; font-variant-numeric: tabular-nums; }
 
-    /* signal badge */
     .badge {
       display: inline-block; padding: 2px 9px; border-radius: 20px;
       font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
@@ -141,7 +130,6 @@
     .badge-4 { background: var(--red-bg); color: var(--red); border-color: #5a1010; }
     .badge-0 { background: var(--surface2); color: var(--muted); border-color: var(--border); }
 
-    /* segment gauge */
     .seg-bar { display: flex; gap: 3px; height: 6px; border-radius: 3px; overflow: hidden; margin: 8px 0 4px; }
     .seg { flex: 1; border-radius: 2px; opacity: .2; transition: opacity .3s; }
     .seg.on { opacity: 1; }
@@ -167,10 +155,7 @@
     }
 
     /* ── Verdict banner ── */
-    .verdict {
-      border-radius: 12px; padding: 22px 24px; margin-bottom: 20px;
-      border: 2px solid; display: none;
-    }
+    .verdict { border-radius: 12px; padding: 22px 24px; margin-bottom: 20px; border: 2px solid; display: none; }
     .verdict-stage { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 6px; }
     .verdict-title { font-size: 1.7rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
     .verdict-desc { font-size: 0.88rem; opacity: .9; line-height: 1.6; max-width: 620px; }
@@ -190,7 +175,7 @@
     .watch-item:last-child { border-bottom: none; }
     .watch-icon { flex-shrink: 0; }
 
-    /* ── Save + history ── */
+    /* ── History ── */
     .save-row { display: flex; justify-content: center; margin-bottom: 24px; }
     .history-list { list-style: none; }
     .h-item {
@@ -221,9 +206,177 @@
       border-radius: 50%; animation: rot .7s linear infinite;
     }
     @keyframes rot { to { transform: rotate(360deg); } }
+
+    /* ═══════════════════════════════════
+       SETTINGS MODAL
+    ═══════════════════════════════════ */
+    #settingsOverlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.65);
+      z-index: 200;
+      overflow-y: auto;
+      padding: 40px 16px;
+    }
+    #settingsModal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .modal-head h2 { font-size: 1rem; font-weight: 700; }
+    .modal-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 1.4rem; cursor: pointer; line-height: 1; padding: 0 4px;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-privacy {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 0.78rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5;
+    }
+    .modal-privacy strong { color: var(--text); }
+
+    /* API provider block */
+    .api-block {
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px; margin-bottom: 14px;
+    }
+    .api-block-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .api-name { font-size: 0.88rem; font-weight: 700; }
+    .api-pill {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; padding: 2px 8px; border-radius: 20px;
+    }
+    .pill-free { background: var(--green-bg); color: var(--green); border: 1px solid #1f5a30; }
+    .api-desc { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; line-height: 1.45; }
+    .api-link { font-size: 0.75rem; }
+    .api-key-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+    .api-key-input {
+      flex: 1; background: var(--bg);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 6px 10px; border-radius: 6px; font-size: 0.82rem;
+      font-family: 'Courier New', monospace;
+    }
+    .api-key-input:focus { outline: none; border-color: var(--blue); }
+    .api-key-input.has-value { border-color: var(--green); }
+    .btn-reveal {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); padding: 5px 10px; border-radius: 6px;
+      font-size: 0.75rem; cursor: pointer; flex-shrink: 0;
+    }
+    .btn-reveal:hover { color: var(--text); background: var(--border); }
+    .btn-test {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 5px 12px; border-radius: 6px;
+      font-size: 0.78rem; font-weight: 500; cursor: pointer; flex-shrink: 0;
+    }
+    .btn-test:hover { background: var(--border); }
+    .api-status {
+      font-size: 0.75rem; margin-top: 7px; min-height: 18px;
+    }
+    .api-status.ok   { color: var(--green); }
+    .api-status.err  { color: var(--red); }
+    .api-status.busy { color: var(--muted); }
+
+    .modal-footer {
+      display: flex; justify-content: flex-end;
+      gap: 10px; margin-top: 20px; padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* key indicator dot in header */
+    .key-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--muted); display: inline-block;
+    }
+    .key-dot.active { background: var(--green); }
   </style>
 </head>
 <body>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div id="settingsOverlay" onclick="overlayClick(event)">
+  <div id="settingsModal">
+    <div class="modal-head">
+      <h2>&#9881;&#65039; API Settings</h2>
+      <button class="modal-close" onclick="closeSettings()" title="Close">&times;</button>
+    </div>
+
+    <div class="modal-privacy">
+      <strong>Privacy:</strong> Your API keys are stored only in this browser's
+      <code>localStorage</code>. They are sent <em>directly</em> to FRED and Twelve Data
+      when you refresh — never to any third-party server.
+    </div>
+
+    <!-- FRED -->
+    <div class="api-block">
+      <div class="api-block-head">
+        <div>
+          <div class="api-name">FRED API <span style="color:var(--muted);font-weight:400;">(Federal Reserve)</span></div>
+          <div class="api-pill pill-free" style="display:inline-block;margin-top:4px;">Free forever</div>
+        </div>
+      </div>
+      <div class="api-desc" style="margin-top:8px;">
+        Used for: <strong style="color:var(--text);">US 10Y Treasury yield + 3-month history</strong>
+        — auto-computes the Q2 bond direction without manual entry.
+      </div>
+      <div class="api-link">
+        Get your key (2 min): <a href="https://fred.stlouisfed.org/docs/api/api_key.html" target="_blank">fred.stlouisfed.org &#8599;</a>
+      </div>
+      <div class="api-key-row">
+        <input type="password" id="fredKeyInput" class="api-key-input"
+               placeholder="Paste FRED API key here"
+               oninput="keyInputChange('fredKeyInput')" autocomplete="off" />
+        <button class="btn-reveal" onclick="toggleReveal('fredKeyInput')">Show</button>
+        <button class="btn-test" onclick="testFRED()">Test</button>
+      </div>
+      <div class="api-status" id="fredStatus"></div>
+    </div>
+
+    <!-- Twelve Data -->
+    <div class="api-block">
+      <div class="api-block-head">
+        <div>
+          <div class="api-name">Twelve Data</div>
+          <div class="api-pill pill-free" style="display:inline-block;margin-top:4px;">Free · 800 req/day</div>
+        </div>
+      </div>
+      <div class="api-desc" style="margin-top:8px;">
+        Used for: <strong style="color:var(--text);">S&amp;P 500, Gold (USD), USD/MYR, KLCI</strong>
+        — replaces the unreliable Yahoo Finance CORS proxy with direct API calls.
+        One batch request per refresh.
+      </div>
+      <div class="api-link">
+        Get your key (2 min): <a href="https://twelvedata.com/pricing" target="_blank">twelvedata.com &#8599;</a>
+      </div>
+      <div class="api-key-row">
+        <input type="password" id="twelveKeyInput" class="api-key-input"
+               placeholder="Paste Twelve Data API key here"
+               oninput="keyInputChange('twelveKeyInput')" autocomplete="off" />
+        <button class="btn-reveal" onclick="toggleReveal('twelveKeyInput')">Show</button>
+        <button class="btn-test" onclick="testTwelve()">Test</button>
+      </div>
+      <div class="api-status" id="twelveStatus"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSettings()">&#10003; Save &amp; Close</button>
+    </div>
+  </div>
+</div>
+<!-- ═══ END SETTINGS MODAL ═══ -->
+
 <div class="wrap">
 
   <!-- Header -->
@@ -233,6 +386,9 @@
       <div class="header-sub" id="lastUpdated">Not yet refreshed &mdash; click Refresh or enter data manually</div>
     </div>
     <div class="header-actions">
+      <button class="btn btn-ghost" onclick="openSettings()" id="settingsBtn">
+        &#9881; API Keys <span class="key-dot" id="keyDot"></span>
+      </button>
       <button class="btn btn-ghost" onclick="scrollToHistory()">History</button>
       <button class="btn btn-primary" id="fetchBtn" onclick="fetchAll()">
         <span>&#8635;</span> Refresh Data
@@ -277,7 +433,10 @@
         <span class="inp-label">Gold &mdash; 6-month change</span>
         <input type="number" id="gold6m" placeholder="12.0" step="0.1" oninput="runDiag()"> <span class="inp-unit">%</span>
       </div>
-      <p class="card-note">3-month yield history: <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">FRED DGS10</a></p>
+      <p class="card-note">
+        Manual lookup: <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">FRED DGS10</a>
+        &nbsp;&bull;&nbsp; Or link your API key above for auto-fill.
+      </p>
     </div>
 
     <!-- Malaysia -->
@@ -307,10 +466,13 @@
         <span class="inp-label">Gold (MYR / oz)</span>
         <input type="number" id="goldMyr" placeholder="11500" oninput="runDiag()"> <span class="inp-unit">MYR</span>
       </div>
-      <p class="card-note">MGS data: <a href="https://www.bnm.gov.my/monetary-stability/money-market-operations" target="_blank">bnm.gov.my</a> &nbsp;&bull;&nbsp; Gold data auto-derived from USD &times; rate</p>
+      <p class="card-note">
+        MGS yield: <a href="https://www.bnm.gov.my/monetary-stability/money-market-operations" target="_blank">bnm.gov.my &#8599;</a>
+        &nbsp;&bull;&nbsp; KLCI + Gold auto-filled via Twelve Data key.
+      </p>
     </div>
 
-  </div><!-- /markets-grid -->
+  </div>
 
   <!-- Diagnostic -->
   <div class="sec-head">
@@ -322,7 +484,6 @@
   </div>
 
   <div class="q-grid">
-
     <!-- Q1 -->
     <div class="q-card">
       <div class="q-head">
@@ -340,7 +501,7 @@
         <div class="seg seg-r" id="q1s4"></div>
       </div>
       <div class="seg-labels"><span>Low &lt;3%</span><span>3–4%</span><span>4–5%</span><span>5%+</span></div>
-      <div class="q-interp" id="q1interp">Enter market data above to run the diagnostic.</div>
+      <div class="q-interp" id="q1interp">Enter market data to run the diagnostic.</div>
     </div>
 
     <!-- Q2 -->
@@ -402,8 +563,7 @@
       <div class="seg-labels"><span>Active</span><span>Healthy</span><span>Passive</span><span>Gold leads</span></div>
       <div class="q-interp" id="q4interp">Enter index price and gold price to compute ratio.</div>
     </div>
-
-  </div><!-- /q-grid -->
+  </div>
 
   <!-- Composite score bar -->
   <div class="card" style="margin-bottom:20px;">
@@ -449,10 +609,9 @@
     </ul>
   </div>
 
-  <!-- Disclaimer -->
   <div class="disclaimer">
     This tool applies a capital-rotation diagnostic framework &mdash; it is <strong>not financial advice</strong>.
-    Always verify data independently. Consult a licensed financial professional before making investment decisions.
+    Always verify data independently and consult a licensed financial professional before making investment decisions.
   </div>
 
 </div><!-- /wrap -->
@@ -461,20 +620,21 @@
 // ─────────────────────────────────────────────
 //  STATE
 // ─────────────────────────────────────────────
-let diagMkt = 'US';
+let diagMkt   = 'US';
 let lastScores = null;
 
 // ─────────────────────────────────────────────
 //  UTILS
 // ─────────────────────────────────────────────
-const $  = id => document.getElementById(id);
+const $   = id => document.getElementById(id);
 const fld = id => { const v = parseFloat($(id)?.value); return isNaN(v) ? null : v; };
-const setVal = (id, v, fetched = false) => {
+
+function setVal(id, v, fetched = false) {
   const el = $(id);
   if (!el) return;
   el.value = v ?? '';
   el.classList.toggle('inp-fetched', !!fetched);
-};
+}
 
 function showStatus(msg, type) {
   const b = $('statusBar');
@@ -482,30 +642,105 @@ function showStatus(msg, type) {
   b.className = type;
   b.style.display = 'block';
 }
-function hideStatus() { $('statusBar').style.display = 'none'; }
+
+function setBusy(on) {
+  const btn = $('fetchBtn');
+  btn.disabled = on;
+  btn.innerHTML = on ? '<span class="spin"></span> Fetching…' : '&#8635; Refresh Data';
+}
 
 // ─────────────────────────────────────────────
-//  DATA FETCH — Yahoo Finance via CORS proxies
+//  SETTINGS — storage + modal
+// ─────────────────────────────────────────────
+const CFG_KEY = 'mcs_cfg';
+
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); } catch { return {}; }
+}
+
+function persistSettings(cfg) {
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  updateKeyDot(cfg);
+}
+
+function updateKeyDot(cfg) {
+  const active = !!(cfg.fredKey || cfg.twelveKey);
+  $('keyDot').classList.toggle('active', active);
+  $('keyDot').title = active
+    ? (cfg.fredKey ? 'FRED connected' : '') + (cfg.fredKey && cfg.twelveKey ? ' · ' : '') + (cfg.twelveKey ? 'Twelve Data connected' : '')
+    : 'No API keys set';
+}
+
+function openSettings() {
+  const cfg = loadSettings();
+  const fi = $('fredKeyInput');
+  const ti = $('twelveKeyInput');
+  fi.value = cfg.fredKey   || '';
+  ti.value = cfg.twelveKey || '';
+  fi.classList.toggle('has-value', !!cfg.fredKey);
+  ti.classList.toggle('has-value', !!cfg.twelveKey);
+  $('fredStatus').textContent   = '';
+  $('fredStatus').className     = 'api-status';
+  $('twelveStatus').textContent = '';
+  $('twelveStatus').className   = 'api-status';
+  $('settingsOverlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSettings() {
+  $('settingsOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function overlayClick(e) {
+  if (e.target === $('settingsOverlay')) closeSettings();
+}
+
+function saveSettings() {
+  const cfg = {
+    fredKey:   $('fredKeyInput').value.trim(),
+    twelveKey: $('twelveKeyInput').value.trim(),
+  };
+  persistSettings(cfg);
+  closeSettings();
+}
+
+function toggleReveal(inputId) {
+  const el = $(inputId);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function keyInputChange(inputId) {
+  const el = $(inputId);
+  el.classList.toggle('has-value', el.value.trim().length > 0);
+}
+
+function setApiStatus(id, msg, type) {
+  const el = $(id);
+  el.textContent = msg;
+  el.className   = `api-status ${type}`;
+}
+
+// ─────────────────────────────────────────────
+//  CORS-PROXY FETCH (Yahoo Finance fallback)
 // ─────────────────────────────────────────────
 const PROXIES = [
   u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
   u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
 ];
 
-async function tryFetch(url) {
-  // direct attempt
+async function tryFetch(url, opts = {}) {
   try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    const r = await fetch(url, { signal: AbortSignal.timeout(5000), ...opts });
     if (r.ok) return await r.json();
   } catch (_) {}
 
   for (const px of PROXIES) {
     try {
-      const r = await fetch(px(url), { signal: AbortSignal.timeout(6000) });
+      const r = await fetch(px(url), { signal: AbortSignal.timeout(7000) });
       if (!r.ok) continue;
       const txt = await r.text();
       const obj = JSON.parse(txt);
-      // allorigins wraps in { contents }
       if (obj?.contents) return JSON.parse(obj.contents);
       return obj;
     } catch (_) {}
@@ -530,86 +765,191 @@ async function yfSeries(symbol) {
     let best = null, bestD = Infinity;
     for (const { t, c } of pts) {
       const d = Math.abs(t - target);
-      if (d < bestD && t <= target + 7 * 86400) { bestD = d; best = c; }
+      if (d < bestD && t <= target + 8 * 86400) { bestD = d; best = c; }
     }
     return best;
   };
 
-  const cur     = meta.regularMarketPrice;
-  const p3m     = getAt(90  * 86400);
-  const p6m     = getAt(182 * 86400);
-  const ytdDate = new Date(new Date().getFullYear(), 0, 2);
-  const pYtd    = getAt((now - ytdDate.getTime() / 1000));
+  const cur  = meta.regularMarketPrice;
+  const p3m  = getAt(91  * 86400);
+  const p6m  = getAt(182 * 86400);
+  const pct  = (a, b) => b ? +((a - b) / b * 100).toFixed(2) : null;
 
-  const pct = (a, b) => b ? +((a - b) / b * 100).toFixed(2) : null;
+  return { price: cur, chg3m: pct(cur, p3m), chg6m: pct(cur, p6m), p3m };
+}
+
+// ─────────────────────────────────────────────
+//  FRED API
+// ─────────────────────────────────────────────
+async function fetchFRED(key) {
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=${key}&sort_order=desc&limit=95&file_type=json`;
+  const data = await tryFetch(url); // FRED supports CORS natively
+  if (!data?.observations) throw new Error('Unexpected FRED response');
+
+  const valid = data.observations.filter(o => o.value !== '.' && o.value.trim() !== '');
+  if (!valid.length) throw new Error('No FRED observations');
+
+  const current = parseFloat(valid[0].value);
+
+  // Find the value closest to 90 calendar days ago
+  const target90 = new Date();
+  target90.setDate(target90.getDate() - 90);
+  const t90str = target90.toISOString().split('T')[0];
+
+  // valid is descending; scan backwards for first obs <= target
+  let prev3m = null;
+  for (let i = valid.length - 1; i >= 0; i--) {
+    if (valid[i].date <= t90str) { prev3m = parseFloat(valid[i].value); break; }
+  }
+  if (prev3m === null && valid.length > 1) prev3m = parseFloat(valid[valid.length - 1].value);
+
+  return { current, prev3m };
+}
+
+async function testFRED() {
+  const key = $('fredKeyInput').value.trim();
+  if (!key) { setApiStatus('fredStatus', 'Enter a key first.', 'err'); return; }
+  setApiStatus('fredStatus', '⏳ Testing…', 'busy');
+  try {
+    const res = await fetchFRED(key);
+    setApiStatus('fredStatus', `✓ Connected — current DGS10: ${res.current}%, 3-month ago: ${res.prev3m}%`, 'ok');
+  } catch (e) {
+    setApiStatus('fredStatus', `✗ Failed: ${e.message}`, 'err');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  TWELVE DATA API
+// ─────────────────────────────────────────────
+async function fetchTwelveData(key) {
+  // One batch call — Twelve Data returns a dict keyed by symbol
+  const symbols = 'SPX,XAU/USD,USD/MYR,^KLSE';
+  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbols)}&interval=1week&outputsize=27&apikey=${key}`;
+  const data = await tryFetch(url);
+  if (!data) throw new Error('No response from Twelve Data');
+  if (data.code === 400 || data.code === 401 || data.status === 'error')
+    throw new Error(data.message || `Error ${data.code}`);
+
+  const parseSeries = sym => {
+    const s = data[sym];
+    if (!s || s.status === 'error') return null;
+    const vals = s.values; // newest first
+    if (!vals?.length) return null;
+
+    const cur = parseFloat(vals[0].close);
+    const p3m = vals[13] ? parseFloat(vals[13].close) : null;
+    const p6m = vals[26] ? parseFloat(vals[26].close) : null;
+    const pct = (a, b) => b ? +((a - b) / b * 100).toFixed(2) : null;
+
+    return { price: cur, chg3m: pct(cur, p3m), chg6m: pct(cur, p6m), p3m };
+  };
 
   return {
-    price:    cur,
-    chg1d:    pct(cur, meta.chartPreviousClose),
-    chg3m:    pct(cur, p3m),
-    chg6m:    pct(cur, p6m),
-    chgYtd:   pct(cur, pYtd),
-    p3m,
-    high52:   meta.fiftyTwoWeekHigh,
-    low52:    meta.fiftyTwoWeekLow,
+    sp500:  parseSeries('SPX'),
+    gold:   parseSeries('XAU/USD'),
+    usdmyr: parseSeries('USD/MYR'),
+    klci:   parseSeries('^KLSE'),
   };
 }
 
+async function testTwelve() {
+  const key = $('twelveKeyInput').value.trim();
+  if (!key) { setApiStatus('twelveStatus', 'Enter a key first.', 'err'); return; }
+  setApiStatus('twelveStatus', '⏳ Testing…', 'busy');
+  try {
+    const res = await fetchTwelveData(key);
+    const parts = [];
+    if (res.sp500)  parts.push(`SPX $${Math.round(res.sp500.price)}`);
+    if (res.gold)   parts.push(`Gold $${Math.round(res.gold.price)}`);
+    if (res.usdmyr) parts.push(`USD/MYR ${res.usdmyr.price.toFixed(3)}`);
+    if (res.klci)   parts.push(`KLCI ${Math.round(res.klci.price)}`);
+    if (!parts.length) throw new Error('No symbols returned');
+    setApiStatus('twelveStatus', `✓ Connected — ${parts.join(' · ')}`, 'ok');
+  } catch (e) {
+    setApiStatus('twelveStatus', `✗ Failed: ${e.message}`, 'err');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  MAIN FETCH ORCHESTRATOR
+// ─────────────────────────────────────────────
 async function fetchAll() {
-  const btn = $('fetchBtn');
-  btn.innerHTML = '<span class="spin"></span> Fetching…';
-  btn.disabled = true;
-  showStatus('Fetching live data from Yahoo Finance…', 'info');
+  setBusy(true);
+  showStatus('Fetching live market data…', 'info');
 
-  const syms = {
-    us10y:  '^TNX',
-    sp500:  '^GSPC',
-    gold:   'GC=F',
-    klci:   '^KLSE',
-    usdmyr: 'USDMYR=X',
-  };
+  const cfg = loadSettings();
+  const used = [];
+  const failed = [];
 
-  const results = {};
+  // ── Step 1: Yahoo Finance via CORS proxy (base layer) ──
+  const yahooSyms = { us10y: '^TNX', sp500: '^GSPC', gold: 'GC=F', klci: '^KLSE', usdmyr: 'USDMYR=X' };
+  const yf = {};
   await Promise.all(
-    Object.entries(syms).map(async ([k, sym]) => {
-      results[k] = await yfSeries(sym);
+    Object.entries(yahooSyms).map(async ([k, sym]) => {
+      yf[k] = await yfSeries(sym);
     })
   );
 
-  let ok = 0, fail = 0;
+  let anyYf = false;
+  if (yf.us10y)  { setVal('us10y',  yf.us10y.price.toFixed(2),   true); anyYf = true; }
+  if (yf.us10y?.p3m) setVal('us10yPrev', yf.us10y.p3m.toFixed(2), true);
+  if (yf.sp500)  { setVal('sp500',  Math.round(yf.sp500.price),   true); anyYf = true; }
+  if (yf.sp500?.chg6m != null) setVal('sp6m', yf.sp500.chg6m.toFixed(1), true);
+  if (yf.gold)   { setVal('goldUsd', Math.round(yf.gold.price),   true); anyYf = true; }
+  if (yf.gold?.chg6m != null)  setVal('gold6m', yf.gold.chg6m.toFixed(1), true);
+  if (yf.klci)   { setVal('klci',   Math.round(yf.klci.price),    true); anyYf = true; }
+  if (yf.klci?.chg6m != null)  setVal('klci6m', yf.klci.chg6m.toFixed(1), true);
+  if (yf.usdmyr) {
+    setVal('usdmyr', yf.usdmyr.price.toFixed(3), true);
+    if (yf.gold) setVal('goldMyr', Math.round(yf.gold.price * yf.usdmyr.price), true);
+    anyYf = true;
+  }
+  if (anyYf) used.push('Yahoo Finance');
+  else failed.push('Yahoo Finance');
 
-  const populate = (key, id, transform, fetched = true) => {
-    const d = results[key];
-    if (!d) { fail++; return; }
-    const v = transform(d);
-    if (v != null) { setVal(id, typeof v === 'number' ? +v.toFixed(3) : v, fetched); ok++; }
-  };
-
-  populate('us10y',  'us10y',    d => d.price);
-  populate('us10y',  'us10yPrev', d => d.p3m ? +d.p3m.toFixed(2) : null);
-  populate('sp500',  'sp500',    d => Math.round(d.price));
-  populate('sp500',  'sp6m',     d => d.chg6m);
-  populate('gold',   'goldUsd',  d => Math.round(d.price));
-  populate('gold',   'gold6m',   d => d.chg6m);
-  populate('klci',   'klci',     d => Math.round(d.price));
-  populate('klci',   'klci6m',   d => d.chg6m);
-  populate('usdmyr', 'usdmyr',   d => d.price);
-
-  // Derive gold MYR
-  if (results.gold && results.usdmyr) {
-    const gMyr = results.gold.price * results.usdmyr.price;
-    setVal('goldMyr', Math.round(gMyr), true);
+  // ── Step 2: Twelve Data (overrides Yahoo Finance for price data) ──
+  if (cfg.twelveKey) {
+    try {
+      const td = await fetchTwelveData(cfg.twelveKey);
+      if (td.sp500)  { setVal('sp500',  Math.round(td.sp500.price),    true); }
+      if (td.sp500?.chg6m != null) setVal('sp6m', td.sp500.chg6m.toFixed(1), true);
+      if (td.gold)   { setVal('goldUsd', Math.round(td.gold.price),    true); }
+      if (td.gold?.chg6m != null)  setVal('gold6m', td.gold.chg6m.toFixed(1), true);
+      if (td.klci)   { setVal('klci',   Math.round(td.klci.price),     true); }
+      if (td.klci?.chg6m != null)  setVal('klci6m', td.klci.chg6m.toFixed(1), true);
+      if (td.usdmyr) {
+        setVal('usdmyr', td.usdmyr.price.toFixed(3), true);
+        if (td.gold) setVal('goldMyr', Math.round(td.gold.price * td.usdmyr.price), true);
+      }
+      used.push('Twelve Data');
+    } catch (e) {
+      failed.push(`Twelve Data (${e.message})`);
+    }
   }
 
-  const now = new Date();
-  $('lastUpdated').textContent = `Last updated: ${now.toLocaleString('en-MY')}`;
+  // ── Step 3: FRED (overrides yield fields — most authoritative) ──
+  if (cfg.fredKey) {
+    try {
+      const fr = await fetchFRED(cfg.fredKey);
+      setVal('us10y',    fr.current.toFixed(2),  true);
+      if (fr.prev3m != null) setVal('us10yPrev', fr.prev3m.toFixed(2), true);
+      used.push('FRED');
+    } catch (e) {
+      failed.push(`FRED (${e.message})`);
+    }
+  }
 
-  if (ok > 0 && fail === 0) showStatus(`✓ All data loaded. (${ok} fields)`, 'ok');
-  else if (ok > 0) showStatus(`Partial data loaded (${ok} fields). ${fail} symbol(s) failed — enter missing values manually.`, 'warn');
-  else showStatus('Could not fetch live data (CORS blocked or network error). Enter values manually.', 'err');
+  // ── Update timestamp + status ──
+  $('lastUpdated').textContent = `Last updated: ${new Date().toLocaleString('en-MY')}`;
 
-  btn.innerHTML = '&#8635; Refresh Data';
-  btn.disabled = false;
+  const srcLine = used.length ? `Sources: ${used.join(' · ')}` : '';
+  const failLine = failed.length ? `  ✗ Failed: ${failed.join(', ')}` : '';
+
+  if (used.length && !failed.length) showStatus(`✓ All data loaded. ${srcLine}`, 'ok');
+  else if (used.length)              showStatus(`${srcLine}${failLine}`, 'warn');
+  else                               showStatus('Could not fetch any live data. Please enter values manually.', 'err');
+
+  setBusy(false);
   runDiag();
 }
 
@@ -617,10 +957,9 @@ async function fetchAll() {
 //  DIAGNOSTIC ENGINE
 // ─────────────────────────────────────────────
 function setQ(n, score, label, value, interp) {
-  const cls = score ? `badge-${score}` : 'badge-0';
-  $(`q${n}badge`).textContent  = label;
-  $(`q${n}badge`).className    = `badge ${cls}`;
-  $(`q${n}val`).textContent    = value;
+  $(`q${n}badge`).textContent = label;
+  $(`q${n}badge`).className   = `badge ${score ? 'badge-' + score : 'badge-0'}`;
+  $(`q${n}val`).textContent   = value;
   $(`q${n}interp`).textContent = interp;
   for (let i = 1; i <= 4; i++)
     $(`q${n}s${i}`).classList.toggle('on', i === score);
@@ -629,44 +968,44 @@ function setQ(n, score, label, value, interp) {
 function runDiag() {
   const isUS = diagMkt === 'US';
 
-  const yield10y   = isUS ? fld('us10y')    : fld('mgs10y');
-  const yieldPrev  = isUS ? fld('us10yPrev'): fld('mgs10yPrev');
-  const eq6m       = isUS ? fld('sp6m')     : fld('klci6m');
-  const gold6m     = fld('gold6m');
-  const eqPrice    = isUS ? fld('sp500')    : fld('klci');
-  const goldPrice  = fld('goldUsd');
+  const yield10y  = isUS ? fld('us10y')     : fld('mgs10y');
+  const yieldPrev = isUS ? fld('us10yPrev') : fld('mgs10yPrev');
+  const eq6m      = isUS ? fld('sp6m')      : fld('klci6m');
+  const gold6m    = fld('gold6m');
+  const eqPrice   = isUS ? fld('sp500')     : fld('klci');
+  const goldPrice = fld('goldUsd');
 
-  // ── Q1: Risk-free rate level ──
+  // ── Q1 ──
   let q1 = null, q1lbl = '–', q1val = '–', q1txt = 'Enter market data to run the diagnostic.';
   if (yield10y !== null) {
     q1val = `${yield10y.toFixed(2)}%`;
     if (yield10y < 3.0) {
       q1 = 1; q1lbl = 'Supportive';
-      q1txt = `At ${yield10y}% the risk-free rate is low — equity valuations are supported and borrowing is cheap. Capital seeks growth.`;
+      q1txt = `At ${yield10y}%, the risk-free rate is low — equity valuations are well-supported. Capital actively seeks growth assets.`;
     } else if (yield10y < 4.0) {
       q1 = 2; q1lbl = 'Moderate';
-      q1txt = `At ${yield10y}%, rates are moderate. Some valuation headwind exists but not enough to choke off equity demand.`;
+      q1txt = `At ${yield10y}%, rates are moderate. Some valuation headwind exists but not severe enough to choke equity demand.`;
     } else if (yield10y < 5.0) {
       q1 = 3; q1lbl = 'Elevated';
-      q1txt = `At ${yield10y}%, the risk-free rate competes seriously with equities. Valuation multiples are under pressure.`;
+      q1txt = `At ${yield10y}%, the risk-free rate competes seriously with equities. P/E multiples face meaningful compression pressure.`;
     } else {
       q1 = 4; q1lbl = 'High Pressure';
-      q1txt = `At ${yield10y}%, the risk-free rate is in active compression territory. High-quality bonds now rival equity returns.`;
+      q1txt = `At ${yield10y}%, the risk-free rate is in active valuation-compression territory. High-quality bonds now rival equity expected returns.`;
     }
   }
   setQ(1, q1, q1lbl, q1val, q1txt);
 
-  // ── Q2: Bond direction (yield trend) ──
+  // ── Q2 ──
   let q2 = null, q2lbl = '–', q2val = '–', q2txt = 'Enter the 3-month-ago yield to see the bond trend.';
   if (yield10y !== null && yieldPrev !== null) {
     const delta = +(yield10y - yieldPrev).toFixed(2);
     q2val = `${delta >= 0 ? '+' : ''}${delta}%`;
     if (delta < -0.25) {
       q2 = 1; q2lbl = 'Falling';
-      q2txt = `Yield has fallen ${Math.abs(delta)}% over 3 months — bond prices rising. A supportive environment for equities.`;
+      q2txt = `Yield has fallen ${Math.abs(delta)}% over 3 months — bond prices rising. A supportive signal for equities.`;
     } else if (delta <= 0.25) {
       q2 = 2; q2lbl = 'Stable';
-      q2txt = `Yield is roughly flat (${q2val} over 3 months). No significant bond market stress.`;
+      q2txt = `Yield is roughly flat (${q2val} over 3 months). No significant bond market stress signal.`;
     } else if (delta <= 0.75) {
       q2 = 3; q2lbl = 'Rising';
       q2txt = `Yield has risen ${delta}% over 3 months — bond prices falling. Adds stress to valuations and leveraged positions.`;
@@ -675,75 +1014,75 @@ function runDiag() {
       q2txt = `Yield has surged ${delta}% over 3 months — even the "risk-free" asset is unsafe. A key late-cycle stress signal.`;
     }
   } else if (yield10y !== null) {
-    q2txt = 'Enter the 3-month-ago yield to calculate trend direction.';
+    q2txt = 'Enter the 3-month-ago yield (or link FRED API above) to auto-calculate trend direction.';
   }
   setQ(2, q2, q2lbl, q2val, q2txt);
 
-  // ── Q3: Capital flows (both equities and gold rallying?) ──
+  // ── Q3 ──
   let q3 = null, q3lbl = '–', q3val = '–', q3txt = 'Enter 6-month changes for equities and gold.';
   if (eq6m !== null && gold6m !== null) {
-    q3val = `EQ ${eq6m > 0 ? '+' : ''}${eq6m.toFixed(1)}%  /  AU ${gold6m > 0 ? '+' : ''}${gold6m.toFixed(1)}%`;
+    q3val = `EQ ${eq6m > 0 ? '+' : ''}${eq6m.toFixed(1)}%  /  Au ${gold6m > 0 ? '+' : ''}${gold6m.toFixed(1)}%`;
     const eqStrong   = eq6m   > 7;
     const goldStrong = gold6m > 7;
-    const goldDominating = gold6m > eq6m + 8;
+    const goldDom    = gold6m > eq6m + 8;
 
     if (eqStrong && !goldStrong) {
       q3 = 1; q3lbl = 'Equities Lead';
-      q3txt = `Equities up ${eq6m.toFixed(1)}% (6m), gold flat/lagging. Capital flowing into risk assets — textbook healthy rotation.`;
+      q3txt = `Equities +${eq6m.toFixed(1)}% (6m), gold lagging. Capital flowing into risk assets — textbook healthy rotation.`;
     } else if (eqStrong && goldStrong) {
       q3 = 3; q3lbl = 'Both Rallying';
       q3txt = `Equities (+${eq6m.toFixed(1)}%) AND gold (+${gold6m.toFixed(1)}%) both surging. The market is hedging both directions — a late-cycle contradiction.`;
-    } else if (goldDominating || (goldStrong && !eqStrong)) {
+    } else if (goldDom || (goldStrong && !eqStrong)) {
       q3 = 4; q3lbl = 'Gold Dominates';
-      q3txt = `Gold (+${gold6m.toFixed(1)}%) outperforming equities (+${eq6m.toFixed(1)}%). Capital seeking haven — risk-off developing.`;
+      q3txt = `Gold (+${gold6m.toFixed(1)}%) significantly outperforms equities (+${eq6m.toFixed(1)}%). Capital seeking safe haven — risk-off developing.`;
     } else {
       q3 = 2; q3lbl = 'Mixed';
-      q3txt = `Neither equities nor gold showing strong directional leadership. Wait for a clearer signal.`;
+      q3txt = `No strong directional leadership from either equities or gold. Watch for a clearer signal.`;
     }
   }
   setQ(3, q3, q3lbl, q3val, q3txt);
 
-  // ── Q4: Active vs passive ──
-  let q4 = null, q4lbl = '–', q4val = '–', q4txt = 'Enter index price and gold price to compute the ratio.';
+  // ── Q4 ──
+  let q4 = null, q4lbl = '–', q4val = '–', q4txt = isUS
+    ? 'Enter S&P 500 and gold price to compute the ratio.'
+    : 'Enter KLCI and gold 6-month changes for relative performance.';
+
   if (isUS && eqPrice !== null && goldPrice !== null) {
     const ratio = +(eqPrice / goldPrice).toFixed(2);
     q4val = `S&P / Gold = ${ratio}`;
     if (ratio > 2.5) {
       q4 = 1; q4lbl = 'Active Rally';
-      q4txt = `S&P/Gold ratio ${ratio} — equities strongly outpace gold. Rally is fundamentals-driven. Healthy signal.`;
+      q4txt = `S&P/Gold ${ratio} — equities strongly outpace gold. Fundamentals-driven. Healthy signal.`;
     } else if (ratio > 1.7) {
       q4 = 2; q4lbl = 'Healthy';
-      q4txt = `S&P/Gold ratio ${ratio} — equities modestly ahead. Normal mid-cycle posture.`;
+      q4txt = `S&P/Gold ${ratio} — equities modestly ahead. Normal mid-cycle posture.`;
     } else if (ratio > 1.0) {
       q4 = 3; q4lbl = 'Passive Rally';
-      q4txt = `S&P/Gold ratio ${ratio} — gold is keeping pace with equities. The rally has a significant "nowhere to go" component. Fragile.`;
+      q4txt = `S&P/Gold ${ratio} — gold keeping pace. The rally has a significant "nowhere to go" component. Fragile.`;
     } else {
       q4 = 4; q4lbl = 'Gold Leads';
-      q4txt = `S&P/Gold ratio ${ratio} — gold dominates. Historically below 1.7 signals stress (1970s stagflation, 2008, 2020).`;
+      q4txt = `S&P/Gold ${ratio} — gold dominates. Historically below 1.7 signals economic stress (2008, 2020, 1970s).`;
     }
     setQ(4, q4, q4lbl, q4val, q4txt);
   } else if (!isUS && eq6m !== null && gold6m !== null) {
-    // Malaysia: relative performance
     const outperf = +(eq6m - gold6m).toFixed(1);
     q4val = `KLCI vs Gold: ${outperf > 0 ? '+' : ''}${outperf}%`;
     if (outperf > 6) {
       q4 = 1; q4lbl = 'Active Rally';
-      q4txt = `KLCI outperforming gold by ${outperf}% (6m). Local equities lead — active, fundamentals-driven environment.`;
+      q4txt = `KLCI outperforming gold by ${outperf}% (6m). Active, fundamentals-driven local equities.`;
     } else if (outperf > 0) {
       q4 = 2; q4lbl = 'Healthy';
       q4txt = `KLCI modestly ahead of gold (+${outperf}%). Normal; no strong passive signal.`;
     } else if (outperf > -8) {
       q4 = 3; q4lbl = 'Passive Rally';
-      q4txt = `Gold outperforming KLCI by ${Math.abs(outperf)}%. Passive/fear component growing in returns.`;
+      q4txt = `Gold outperforming KLCI by ${Math.abs(outperf)}%. Fear component growing in local market returns.`;
     } else {
       q4 = 4; q4lbl = 'Gold Leads';
       q4txt = `Gold significantly outperforming KLCI by ${Math.abs(outperf)}%. Risk-off regime.`;
     }
     setQ(4, q4, q4lbl, q4val, q4txt);
   } else {
-    setQ(4, null, '–', '–', isUS
-      ? 'Enter S&P 500 and gold price to compute the ratio.'
-      : 'Enter KLCI and gold 6-month changes for relative performance.');
+    setQ(4, null, '–', '–', q4txt);
   }
 
   // ── Composite ──
@@ -751,18 +1090,15 @@ function runDiag() {
   if (scores.length >= 2) {
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
     lastScores = { q1, q2, q3, q4, avg, n: scores.length };
-
     const pct = Math.min(96, Math.max(4, ((avg - 1) / 3) * 100));
     $('needle').style.left = `${pct}%`;
-    $('scoreNote').textContent =
-      `Composite score: ${avg.toFixed(2)} / 4.00   (based on ${scores.length}/4 questions)`;
-
+    $('scoreNote').textContent = `Composite score: ${avg.toFixed(2)} / 4.00   (based on ${scores.length}/4 questions)`;
     renderVerdict(avg, scores.length);
   } else {
     lastScores = null;
     $('scoreNote').textContent = 'Enter data for at least 2 questions to see a verdict.';
     $('verdictCard').style.display = 'none';
-    $('watchCard').style.display = 'none';
+    $('watchCard').style.display   = 'none';
   }
 }
 
@@ -771,11 +1107,9 @@ function runDiag() {
 // ─────────────────────────────────────────────
 const STAGES = [
   {
-    max: 1.75,
-    cls: 'v-bull',
-    stage: 'Stage 1 — Early Bull',
-    title: 'Early Bull Market',
-    desc:  'Low rates, bonds stable, money entering equities, gold quiet. The environment is supportive of risk-taking. Capital is rotating into equities for fundamental reasons — earnings and growth expectations drive prices.',
+    max: 1.75, cls: 'v-bull',
+    stage: 'Stage 1 — Early Bull', title: 'Early Bull Market',
+    desc: 'Low rates, bonds stable, money entering equities, gold quiet. The environment is supportive of risk-taking. Capital rotates into equities for fundamental reasons — earnings and growth expectations drive prices.',
     posture: '🚀 Posture: Aggressive — lean into risk assets',
     watch: [
       '📈 Yield breakout above 3% would signal transition toward mid-cycle',
@@ -784,11 +1118,9 @@ const STAGES = [
     ],
   },
   {
-    max: 2.5,
-    cls: 'v-mid',
-    stage: 'Stage 2 — Mid-Cycle',
-    title: 'Healthy Mid-Cycle',
-    desc:  'Rates moderate, equities leading, gold neglected. The rally appears active and fundamentals-driven. This is the most comfortable phase of the cycle — momentum is real, and there is no urgent need to hedge.',
+    max: 2.5, cls: 'v-mid',
+    stage: 'Stage 2 — Mid-Cycle', title: 'Healthy Mid-Cycle',
+    desc: 'Rates moderate, equities leading, gold neglected. The rally appears active and fundamentals-driven. This is the most comfortable phase of the cycle — momentum is real and there is no urgent need to hedge.',
     posture: '📈 Posture: Trend-follow — stay invested, no urgency to hedge',
     watch: [
       '📉 10Y yield creeping above 4.5% starts compressing P/E multiples',
@@ -797,29 +1129,25 @@ const STAGES = [
     ],
   },
   {
-    max: 3.25,
-    cls: 'v-late',
-    stage: 'Stage 3 — Late-Cycle Defensive Rally',
-    title: 'Late-Cycle Defensive Rally',
-    desc:  'Rates high, bonds sold off, equities AND gold both elevated — the rally has a large "nowhere to go" component. This is a passive, fragile environment. The party continues, but someone is eyeing the exits.',
+    max: 3.25, cls: 'v-late',
+    stage: 'Stage 3 — Late-Cycle Defensive Rally', title: 'Late-Cycle Defensive Rally',
+    desc: 'Rates high, bonds sold off, equities AND gold both elevated — the rally has a large "nowhere to go" component. This is a passive, fragile environment. The party continues but someone is eyeing the exits.',
     posture: '⚠️ Posture: Trend-follow with tight stops — hand near the exit',
     watch: [
       '🚨 10Y yield breaking above 5% → active valuation compression begins',
-      '🥇 Gold/equity ratio accelerating → escalating fear, possible phase shift to Risk-Off',
-      '📊 Watch earnings guidance for first signs of margin compression',
+      '🥇 Gold/equity ratio accelerating → escalating fear, possible shift to Risk-Off',
+      '📊 Earnings guidance showing first signs of margin compression',
     ],
   },
   {
-    max: 4.01,
-    cls: 'v-risk',
-    stage: 'Stage 4 — Risk-Off',
-    title: 'Risk-Off / Correction',
-    desc:  'Equities rolling over, money fleeing to gold (and possibly cash) rather than bonds. The passive rally has ended; active selling may be underway. Preservation of capital takes priority over return-seeking.',
+    max: 4.01, cls: 'v-risk',
+    stage: 'Stage 4 — Risk-Off', title: 'Risk-Off / Correction',
+    desc: 'Equities rolling over, money fleeing to gold (and cash) rather than bonds. The passive rally has ended; active selling may be underway. Preservation of capital takes priority over return-seeking.',
     posture: '🛡️ Posture: Defensive — cash, gold, short-duration bonds',
     watch: [
       '💵 Yield collapse (flight to bonds) signals peak fear / capitulation point',
-      '📉 Watch key support levels on major indices for stabilisation',
-      '🏦 Central bank pivot communication is the main re-entry signal',
+      '📉 Key support levels on major indices — watch for stabilisation',
+      '🏦 Central bank pivot signals are the main re-entry indicator',
     ],
   },
 ];
@@ -827,10 +1155,9 @@ const STAGES = [
 function renderVerdict(avg, n) {
   const s = STAGES.find(x => avg < x.max);
   if (!s) return;
-
   const card = $('verdictCard');
-  card.className = `verdict ${s.cls}`;
-  card.style.display = 'block';
+  card.className            = `verdict ${s.cls}`;
+  card.style.display        = 'block';
   $('vStage').textContent   = s.stage;
   $('vTitle').textContent   = s.title;
   $('vDesc').textContent    = s.desc;
@@ -846,8 +1173,7 @@ function renderVerdict(avg, n) {
       `<li class="watch-item" style="border-top:1px solid var(--border);margin-top:6px;padding-top:10px;">
         <span class="watch-icon">ℹ️</span>
         <span style="color:var(--muted)">Verdict based on ${n}/4 questions — enter more data for a complete picture.</span>
-      </li>`
-    );
+      </li>`);
   }
   $('watchCard').style.display = 'block';
 }
@@ -871,33 +1197,23 @@ function getHistory() {
   try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
 }
 
-function verdictLabel(avg) {
-  return STAGES.find(s => avg < s.max)?.title ?? '—';
-}
-
+function verdictLabel(avg) { return (STAGES.find(s => avg < s.max) || STAGES.at(-1)).title; }
 function verdictColor(label) {
   if (label.includes('Early'))  return 'var(--green)';
   if (label.includes('Mid'))    return 'var(--blue)';
   if (label.includes('Late'))   return 'var(--orange)';
   return 'var(--red)';
 }
-
 const DOT_COLORS = ['var(--green)', 'var(--yellow)', 'var(--orange)', 'var(--red)'];
 
 function saveReading() {
-  if (!lastScores) {
-    alert('Run the diagnostic first by entering data above.');
-    return;
-  }
+  if (!lastScores) { alert('Run the diagnostic first by entering data above.'); return; }
   const rec = {
-    ts:      new Date().toISOString(),
-    mkt:     diagMkt,
-    scores:  lastScores,
-    verdict: verdictLabel(lastScores.avg),
+    ts: new Date().toISOString(), mkt: diagMkt,
+    scores: lastScores, verdict: verdictLabel(lastScores.avg),
     snap: {
-      us10y:   fld('us10y'),   sp500:   fld('sp500'),
-      goldUsd: fld('goldUsd'), mgs10y:  fld('mgs10y'),
-      klci:    fld('klci'),    usdmyr:  fld('usdmyr'),
+      us10y: fld('us10y'), sp500: fld('sp500'), goldUsd: fld('goldUsd'),
+      mgs10y: fld('mgs10y'), klci: fld('klci'), usdmyr: fld('usdmyr'),
     },
   };
   const h = getHistory();
@@ -919,13 +1235,11 @@ function renderHistory() {
     return;
   }
   el.innerHTML = h.map(r => {
-    const d   = new Date(r.ts);
-    const fmt = d.toLocaleString('en-MY', { dateStyle: 'medium', timeStyle: 'short' });
-    const qs  = [r.scores.q1, r.scores.q2, r.scores.q3, r.scores.q4];
-    const dots = qs.map(q =>
-      q ? `<span class="dot" style="background:${DOT_COLORS[q-1]}"></span>`
-        : `<span class="dot dot-0"></span>`
-    ).join('');
+    const fmt   = new Date(r.ts).toLocaleString('en-MY', { dateStyle: 'medium', timeStyle: 'short' });
+    const qs    = [r.scores.q1, r.scores.q2, r.scores.q3, r.scores.q4];
+    const dots  = qs.map(q => q
+      ? `<span class="dot" style="background:${DOT_COLORS[q-1]}"></span>`
+      : `<span class="dot dot-0"></span>`).join('');
     const color = verdictColor(r.verdict);
     const flag  = r.mkt === 'US' ? '🇺🇸' : '🇲🇾';
     return `<li class="h-item">
@@ -953,6 +1267,7 @@ function scrollToHistory() {
 //  INIT
 // ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  updateKeyDot(loadSettings());
   renderHistory();
   fetchAll();
 });
