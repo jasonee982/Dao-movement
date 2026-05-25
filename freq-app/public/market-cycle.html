@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Cycle Stage Monitor</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --blue: #58a6ff;
+      --green: #3fb950;
+      --yellow: #e3b341;
+      --orange: #db6d28;
+      --red: #f85149;
+      --green-bg: #0f2a18;
+      --yellow-bg: #2e2008;
+      --orange-bg: #2e1208;
+      --red-bg: #2e0808;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    a { color: var(--blue); }
+    .wrap { max-width: 1140px; margin: 0 auto; padding: 20px 16px 60px; }
+
+    /* ── Header ── */
+    .header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+      margin-bottom: 24px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; }
+    .header-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border);
+      cursor: pointer; font-size: 0.82rem; font-weight: 500; transition: opacity .15s;
+      text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary { background: var(--blue); color: #0d1117; border-color: var(--blue); }
+    .btn-primary:hover { opacity: .85; }
+    .btn-ghost { background: var(--surface2); color: var(--text); }
+    .btn-ghost:hover { background: var(--border); }
+    .btn-danger { background: transparent; color: var(--red); border-color: var(--red); }
+    .btn-danger:hover { background: var(--red-bg); }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Status bar ── */
+    #statusBar {
+      padding: 8px 12px; border-radius: 6px; font-size: 0.8rem;
+      margin-bottom: 16px; display: none;
+    }
+    #statusBar.info { background: #0d1f3a; border: 1px solid #1f4b7a; color: var(--blue); }
+    #statusBar.ok   { background: var(--green-bg); border: 1px solid #1f5a30; color: var(--green); }
+    #statusBar.warn { background: var(--orange-bg); border: 1px solid #5a2e10; color: var(--orange); }
+    #statusBar.err  { background: var(--red-bg); border: 1px solid #5a1010; color: var(--red); }
+
+    /* ── Section header ── */
+    .sec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .sec-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+
+    /* ── Cards ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+
+    /* ── Market inputs grid ── */
+    .markets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    @media(max-width:640px){ .markets-grid { grid-template-columns: 1fr; } }
+
+    .card-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--muted); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .input-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px solid var(--border); gap: 8px;
+    }
+    .input-row:last-of-type { border-bottom: none; }
+    .inp-label { color: var(--muted); font-size: 0.82rem; flex: 1; }
+    .inp-unit { font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
+    input[type=number] {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 4px 8px; border-radius: 4px;
+      font-size: 0.82rem; width: 88px; text-align: right;
+      -moz-appearance: textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    input[type=number]:focus { outline: none; border-color: var(--blue); }
+    .inp-fetched { border-color: #1f4b7a !important; }
+    .card-note { font-size: 0.72rem; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+
+    /* ── Diagnostic tabs ── */
+    .tabs { display: flex; gap: 4px; }
+    .tab {
+      padding: 4px 12px; border-radius: 6px; font-size: 0.8rem;
+      cursor: pointer; background: transparent; border: 1px solid var(--border);
+      color: var(--muted); transition: all .15s;
+    }
+    .tab.active { background: var(--surface2); color: var(--text); border-color: var(--blue); }
+
+    /* ── 4-question grid ── */
+    .q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    @media(max-width:640px){ .q-grid { grid-template-columns: 1fr; } }
+
+    .q-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .q-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .q-num { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+    .q-title { font-size: 0.9rem; font-weight: 600; margin-top: 2px; }
+    .q-val { font-size: 1.4rem; font-weight: 700; margin: 6px 0; font-variant-numeric: tabular-nums; }
+
+    .badge {
+      display: inline-block; padding: 2px 9px; border-radius: 20px;
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; white-space: nowrap; border: 1px solid;
+    }
+    .badge-1 { background: var(--green-bg); color: var(--green); border-color: #1f5a30; }
+    .badge-2 { background: var(--yellow-bg); color: var(--yellow); border-color: #5a4010; }
+    .badge-3 { background: var(--orange-bg); color: var(--orange); border-color: #5a2e10; }
+    .badge-4 { background: var(--red-bg); color: var(--red); border-color: #5a1010; }
+    .badge-0 { background: var(--surface2); color: var(--muted); border-color: var(--border); }
+
+    .seg-bar { display: flex; gap: 3px; height: 6px; border-radius: 3px; overflow: hidden; margin: 8px 0 4px; }
+    .seg { flex: 1; border-radius: 2px; opacity: .2; transition: opacity .3s; }
+    .seg.on { opacity: 1; }
+    .seg-g { background: var(--green); }
+    .seg-y { background: var(--yellow); }
+    .seg-o { background: var(--orange); }
+    .seg-r { background: var(--red); }
+    .seg-labels { display: flex; justify-content: space-between; font-size: 0.64rem; color: var(--muted); }
+    .q-interp { font-size: 0.78rem; color: var(--muted); margin-top: 8px; line-height: 1.45; }
+
+    /* ── Composite needle bar ── */
+    .needle-wrap {
+      position: relative; height: 10px;
+      background: linear-gradient(to right, var(--green), var(--yellow) 33%, var(--orange) 66%, var(--red));
+      border-radius: 5px; margin: 10px 0 6px;
+    }
+    .needle {
+      position: absolute; top: -5px;
+      width: 20px; height: 20px;
+      background: var(--text); border: 3px solid var(--bg);
+      border-radius: 50%; transform: translateX(-50%);
+      transition: left .5s ease; box-shadow: 0 0 6px rgba(0,0,0,.6);
+    }
+
+    /* ── Verdict banner ── */
+    .verdict { border-radius: 12px; padding: 22px 24px; margin-bottom: 20px; border: 2px solid; display: none; }
+    .verdict-stage { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 6px; }
+    .verdict-title { font-size: 1.7rem; font-weight: 800; letter-spacing: -.02em; margin-bottom: 8px; }
+    .verdict-desc { font-size: 0.88rem; opacity: .9; line-height: 1.6; max-width: 620px; }
+    .verdict-posture {
+      display: inline-block; margin-top: 12px; padding: 5px 14px;
+      background: rgba(0,0,0,.25); border-radius: 20px;
+      font-size: 0.82rem; font-weight: 600;
+    }
+    .v-bull { background: #0a2416; border-color: var(--green); color: var(--green); }
+    .v-mid  { background: #0a1b2e; border-color: var(--blue);  color: var(--blue); }
+    .v-late { background: #2a1508; border-color: var(--orange); color: var(--orange); }
+    .v-risk { background: #2a0808; border-color: var(--red);    color: var(--red); }
+
+    /* ── Watch list ── */
+    #watchCard { margin-bottom: 20px; display: none; }
+    .watch-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .watch-item:last-child { border-bottom: none; }
+    .watch-icon { flex-shrink: 0; }
+
+    /* ── History ── */
+    .save-row { display: flex; justify-content: center; margin-bottom: 24px; }
+    .history-list { list-style: none; }
+    .h-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; margin-bottom: 7px; flex-wrap: wrap;
+    }
+    .h-date { color: var(--muted); font-size: 0.72rem; min-width: 130px; }
+    .h-dots { display: flex; gap: 4px; align-items: center; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-0 { background: var(--surface2); border: 1px solid var(--border); }
+    .h-verdict { font-weight: 600; flex: 1; font-size: 0.85rem; }
+    .h-score { color: var(--muted); font-size: 0.72rem; }
+    .h-market { font-size: 0.78rem; }
+    .h-empty { color: var(--muted); font-size: 0.82rem; text-align: center; padding: 24px; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      margin-top: 32px; padding: 10px 14px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.72rem; color: var(--muted); text-align: center; line-height: 1.5;
+    }
+
+    /* ── Spinner ── */
+    .spin {
+      display: inline-block; width: 12px; height: 12px;
+      border: 2px solid var(--border); border-top-color: var(--blue);
+      border-radius: 50%; animation: rot .7s linear infinite;
+    }
+    @keyframes rot { to { transform: rotate(360deg); } }
+
+    /* ═══════════════════════════════════
+       SETTINGS MODAL
+    ═══════════════════════════════════ */
+    #settingsOverlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.65);
+      z-index: 200;
+      overflow-y: auto;
+      padding: 40px 16px;
+    }
+    #settingsModal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .modal-head h2 { font-size: 1rem; font-weight: 700; }
+    .modal-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 1.4rem; cursor: pointer; line-height: 1; padding: 0 4px;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-privacy {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 0.78rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5;
+    }
+    .modal-privacy strong { color: var(--text); }
+
+    /* API provider block */
+    .api-block {
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px; margin-bottom: 14px;
+    }
+    .api-block-head {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .api-name { font-size: 0.88rem; font-weight: 700; }
+    .api-pill {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; padding: 2px 8px; border-radius: 20px;
+    }
+    .pill-free { background: var(--green-bg); color: var(--green); border: 1px solid #1f5a30; }
+    .api-desc { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; line-height: 1.45; }
+    .api-link { font-size: 0.75rem; }
+    .api-key-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+    .api-key-input {
+      flex: 1; background: var(--bg);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 6px 10px; border-radius: 6px; font-size: 0.82rem;
+      font-family: 'Courier New', monospace;
+    }
+    .api-key-input:focus { outline: none; border-color: var(--blue); }
+    .api-key-input.has-value { border-color: var(--green); }
+    .btn-reveal {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); padding: 5px 10px; border-radius: 6px;
+      font-size: 0.75rem; cursor: pointer; flex-shrink: 0;
+    }
+    .btn-reveal:hover { color: var(--text); background: var(--border); }
+    .btn-test {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 5px 12px; border-radius: 6px;
+      font-size: 0.78rem; font-weight: 500; cursor: pointer; flex-shrink: 0;
+    }
+    .btn-test:hover { background: var(--border); }
+    .api-status {
+      font-size: 0.75rem; margin-top: 7px; min-height: 18px;
+    }
+    .api-status.ok   { color: var(--green); }
+    .api-status.err  { color: var(--red); }
+    .api-status.busy { color: var(--muted); }
+
+    .modal-footer {
+      display: flex; justify-content: flex-end;
+      gap: 10px; margin-top: 20px; padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* key indicator dot in header */
+    .key-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--muted); display: inline-block;
+    }
+    .key-dot.active { background: var(--green); }
+  </style>
+</head>
+<body>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div id="settingsOverlay" onclick="overlayClick(event)">
+  <div id="settingsModal">
+    <div class="modal-head">
+      <h2>&#9881;&#65039; API Settings</h2>
+      <button class="modal-close" onclick="closeSettings()" title="Close">&times;</button>
+    </div>
+
+    <div class="modal-privacy">
+      <strong>Privacy:</strong> Your API keys are stored only in this browser's
+      <code>localStorage</code>. They are sent <em>directly</em> to FRED and Twelve Data
+      when you refresh — never to any third-party server.
+    </div>
+
+    <!-- FRED -->
+    <div class="api-block">
+      <div class="api-block-head">
+        <div>
+          <div class="api-name">FRED API <span style="color:var(--muted);font-weight:400;">(Federal Reserve)</span></div>
+          <div class="api-pill pill-free" style="display:inline-block;margin-top:4px;">Free forever</div>
+        </div>
+      </div>
+      <div class="api-desc" style="margin-top:8px;">
+        Used for: <strong style="color:var(--text);">US 10Y Treasury yield + 3-month history</strong>
+        — auto-computes the Q2 bond direction without manual entry.
+      </div>
+      <div class="api-link">
+        Get your key (2 min): <a href="https://fred.stlouisfed.org/docs/api/api_key.html" target="_blank">fred.stlouisfed.org &#8599;</a>
+      </div>
+      <div class="api-key-row">
+        <input type="password" id="fredKeyInput" class="api-key-input"
+               placeholder="Paste FRED API key here"
+               oninput="keyInputChange('fredKeyInput')" autocomplete="off" />
+        <button class="btn-reveal" onclick="toggleReveal('fredKeyInput')">Show</button>
+        <button class="btn-test" onclick="testFRED()">Test</button>
+      </div>
+      <div class="api-status" id="fredStatus"></div>
+    </div>
+
+    <!-- Twelve Data -->
+    <div class="api-block">
+      <div class="api-block-head">
+        <div>
+          <div class="api-name">Twelve Data</div>
+          <div class="api-pill pill-free" style="display:inline-block;margin-top:4px;">Free · 800 req/day</div>
+        </div>
+      </div>
+      <div class="api-desc" style="margin-top:8px;">
+        Used for: <strong style="color:var(--text);">S&amp;P 500, Gold (USD), USD/MYR, KLCI</strong>
+        — replaces the unreliable Yahoo Finance CORS proxy with direct API calls.
+        One batch request per refresh.
+      </div>
+      <div class="api-link">
+        Get your key (2 min): <a href="https://twelvedata.com/pricing" target="_blank">twelvedata.com &#8599;</a>
+      </div>
+      <div class="api-key-row">
+        <input type="password" id="twelveKeyInput" class="api-key-input"
+               placeholder="Paste Twelve Data API key here"
+               oninput="keyInputChange('twelveKeyInput')" autocomplete="off" />
+        <button class="btn-reveal" onclick="toggleReveal('twelveKeyInput')">Show</button>
+        <button class="btn-test" onclick="testTwelve()">Test</button>
+      </div>
+      <div class="api-status" id="twelveStatus"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSettings()">&#10003; Save &amp; Close</button>
+    </div>
+  </div>
+</div>
+<!-- ═══ END SETTINGS MODAL ═══ -->
+
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Market Cycle Stage Monitor</h1>
+      <div class="header-sub" id="lastUpdated">Not yet refreshed &mdash; click Refresh or enter data manually</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="openSettings()" id="settingsBtn">
+        &#9881; API Keys <span class="key-dot" id="keyDot"></span>
+      </button>
+      <button class="btn btn-ghost" onclick="scrollToHistory()">History</button>
+      <button class="btn btn-primary" id="fetchBtn" onclick="fetchAll()">
+        <span>&#8635;</span> Refresh Data
+      </button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div id="statusBar"></div>
+
+  <!-- Market Inputs -->
+  <div class="sec-head" style="margin-bottom:12px;">
+    <span class="sec-label">Market Indicators</span>
+    <span style="font-size:0.72rem;color:var(--muted);">Blue border = auto-fetched &nbsp;|&nbsp; Edit any field manually</span>
+  </div>
+  <div class="markets-grid">
+
+    <!-- US -->
+    <div class="card">
+      <div class="card-title">&#127482;&#127480; United States</div>
+      <div class="input-row">
+        <span class="inp-label">10Y Treasury Yield</span>
+        <input type="number" id="us10y" placeholder="4.50" step="0.01" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">10Y Yield &mdash; 3 months ago</span>
+        <input type="number" id="us10yPrev" placeholder="4.25" step="0.01" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">S&amp;P 500</span>
+        <input type="number" id="sp500" placeholder="5300" oninput="runDiag()"> <span class="inp-unit">pts</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">S&amp;P 500 &mdash; 6-month change</span>
+        <input type="number" id="sp6m" placeholder="8.5" step="0.1" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">Gold (USD / oz)</span>
+        <input type="number" id="goldUsd" placeholder="2450" oninput="runDiag()"> <span class="inp-unit">USD</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">Gold &mdash; 6-month change</span>
+        <input type="number" id="gold6m" placeholder="12.0" step="0.1" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <p class="card-note">
+        Manual lookup: <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">FRED DGS10</a>
+        &nbsp;&bull;&nbsp; Or link your API key above for auto-fill.
+      </p>
+    </div>
+
+    <!-- Malaysia -->
+    <div class="card">
+      <div class="card-title">&#127474;&#127486; Malaysia</div>
+      <div class="input-row">
+        <span class="inp-label">MGS 10Y Yield</span>
+        <input type="number" id="mgs10y" placeholder="3.90" step="0.01" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">MGS 10Y &mdash; 3 months ago</span>
+        <input type="number" id="mgs10yPrev" placeholder="3.75" step="0.01" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">KLCI</span>
+        <input type="number" id="klci" placeholder="1580" oninput="runDiag()"> <span class="inp-unit">pts</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">KLCI &mdash; 6-month change</span>
+        <input type="number" id="klci6m" placeholder="3.5" step="0.1" oninput="runDiag()"> <span class="inp-unit">%</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">USD / MYR</span>
+        <input type="number" id="usdmyr" placeholder="4.65" step="0.01" oninput="runDiag()"> <span class="inp-unit">MYR</span>
+      </div>
+      <div class="input-row">
+        <span class="inp-label">Gold (MYR / oz)</span>
+        <input type="number" id="goldMyr" placeholder="11500" oninput="runDiag()"> <span class="inp-unit">MYR</span>
+      </div>
+      <p class="card-note">
+        MGS yield: <a href="https://www.bnm.gov.my/monetary-stability/money-market-operations" target="_blank">bnm.gov.my &#8599;</a>
+        &nbsp;&bull;&nbsp; KLCI + Gold auto-filled via Twelve Data key.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Diagnostic -->
+  <div class="sec-head">
+    <span class="sec-label">4-Question Diagnostic</span>
+    <div class="tabs">
+      <button class="tab active" id="tabUS" onclick="setMkt('US')">&#127482;&#127480; US</button>
+      <button class="tab" id="tabMY" onclick="setMkt('MY')">&#127474;&#127486; Malaysia</button>
+    </div>
+  </div>
+
+  <div class="q-grid">
+    <!-- Q1 -->
+    <div class="q-card">
+      <div class="q-head">
+        <div>
+          <div class="q-num">Q1 &mdash; Risk-Free Rate</div>
+          <div class="q-title">Where is the 10-year yield?</div>
+        </div>
+        <span class="badge badge-0" id="q1badge">–</span>
+      </div>
+      <div class="q-val" id="q1val">–</div>
+      <div class="seg-bar">
+        <div class="seg seg-g" id="q1s1"></div>
+        <div class="seg seg-y" id="q1s2"></div>
+        <div class="seg seg-o" id="q1s3"></div>
+        <div class="seg seg-r" id="q1s4"></div>
+      </div>
+      <div class="seg-labels"><span>Low &lt;3%</span><span>3–4%</span><span>4–5%</span><span>5%+</span></div>
+      <div class="q-interp" id="q1interp">Enter market data to run the diagnostic.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q-card">
+      <div class="q-head">
+        <div>
+          <div class="q-num">Q2 &mdash; Bond Direction</div>
+          <div class="q-title">Are bond prices stable or falling?</div>
+        </div>
+        <span class="badge badge-0" id="q2badge">–</span>
+      </div>
+      <div class="q-val" id="q2val">–</div>
+      <div class="seg-bar">
+        <div class="seg seg-g" id="q2s1"></div>
+        <div class="seg seg-y" id="q2s2"></div>
+        <div class="seg seg-o" id="q2s3"></div>
+        <div class="seg seg-r" id="q2s4"></div>
+      </div>
+      <div class="seg-labels"><span>Falling</span><span>Stable</span><span>Rising</span><span>Surging</span></div>
+      <div class="q-interp" id="q2interp">Enter the 3-month-ago yield to calculate the trend.</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q-card">
+      <div class="q-head">
+        <div>
+          <div class="q-num">Q3 &mdash; Capital Flows</div>
+          <div class="q-title">Where is the money flowing?</div>
+        </div>
+        <span class="badge badge-0" id="q3badge">–</span>
+      </div>
+      <div class="q-val" id="q3val">–</div>
+      <div class="seg-bar">
+        <div class="seg seg-g" id="q3s1"></div>
+        <div class="seg seg-y" id="q3s2"></div>
+        <div class="seg seg-o" id="q3s3"></div>
+        <div class="seg seg-r" id="q3s4"></div>
+      </div>
+      <div class="seg-labels"><span>EQ leads</span><span>Healthy</span><span>Mixed</span><span>Both rally</span></div>
+      <div class="q-interp" id="q3interp">Enter 6-month changes for equities and gold.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q-card">
+      <div class="q-head">
+        <div>
+          <div class="q-num">Q4 &mdash; Rally Character</div>
+          <div class="q-title">Active (fundamentals) or passive?</div>
+        </div>
+        <span class="badge badge-0" id="q4badge">–</span>
+      </div>
+      <div class="q-val" id="q4val">–</div>
+      <div class="seg-bar">
+        <div class="seg seg-g" id="q4s1"></div>
+        <div class="seg seg-y" id="q4s2"></div>
+        <div class="seg seg-o" id="q4s3"></div>
+        <div class="seg seg-r" id="q4s4"></div>
+      </div>
+      <div class="seg-labels"><span>Active</span><span>Healthy</span><span>Passive</span><span>Gold leads</span></div>
+      <div class="q-interp" id="q4interp">Enter index price and gold price to compute ratio.</div>
+    </div>
+  </div>
+
+  <!-- Composite score bar -->
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-title">Composite Stress Score</div>
+    <div class="needle-wrap">
+      <div class="needle" id="needle" style="left:2%"></div>
+    </div>
+    <div class="seg-labels" style="margin-top:2px;">
+      <span>Early Bull</span><span>Mid-Cycle</span><span>Late-Cycle</span><span>Risk-Off</span>
+    </div>
+    <div style="margin-top:10px;font-size:0.8rem;color:var(--muted)" id="scoreNote">—</div>
+  </div>
+
+  <!-- Verdict -->
+  <div class="verdict" id="verdictCard">
+    <div class="verdict-stage" id="vStage"></div>
+    <div class="verdict-title" id="vTitle"></div>
+    <div class="verdict-desc" id="vDesc"></div>
+    <div class="verdict-posture" id="vPosture"></div>
+  </div>
+
+  <!-- What to Watch -->
+  <div class="card" id="watchCard">
+    <div class="card-title">What To Watch</div>
+    <ul class="history-list" id="watchList"></ul>
+  </div>
+
+  <!-- Save button -->
+  <div class="save-row" style="margin-top:20px;">
+    <button class="btn btn-primary" id="saveBtn" onclick="saveReading()" style="padding:9px 28px;font-size:0.9rem;">
+      &#128190; Save This Reading
+    </button>
+  </div>
+
+  <!-- History -->
+  <div id="historySection">
+    <div class="sec-head" style="margin-top:8px;">
+      <span class="sec-label">Reading History</span>
+      <button class="btn btn-danger" onclick="clearHistory()" style="padding:4px 10px;font-size:0.75rem;">Clear All</button>
+    </div>
+    <ul class="history-list" id="historyList">
+      <div class="h-empty">No readings saved yet.</div>
+    </ul>
+  </div>
+
+  <div class="disclaimer">
+    This tool applies a capital-rotation diagnostic framework &mdash; it is <strong>not financial advice</strong>.
+    Always verify data independently and consult a licensed financial professional before making investment decisions.
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let diagMkt   = 'US';
+let lastScores = null;
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+const $   = id => document.getElementById(id);
+const fld = id => { const v = parseFloat($(id)?.value); return isNaN(v) ? null : v; };
+
+function setVal(id, v, fetched = false) {
+  const el = $(id);
+  if (!el) return;
+  el.value = v ?? '';
+  el.classList.toggle('inp-fetched', !!fetched);
+}
+
+function showStatus(msg, type) {
+  const b = $('statusBar');
+  b.textContent = msg;
+  b.className = type;
+  b.style.display = 'block';
+}
+
+function setBusy(on) {
+  const btn = $('fetchBtn');
+  btn.disabled = on;
+  btn.innerHTML = on ? '<span class="spin"></span> Fetching…' : '&#8635; Refresh Data';
+}
+
+// ─────────────────────────────────────────────
+//  SETTINGS — storage + modal
+// ─────────────────────────────────────────────
+const CFG_KEY = 'mcs_cfg';
+
+function loadSettings() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); } catch { return {}; }
+}
+
+function persistSettings(cfg) {
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  updateKeyDot(cfg);
+}
+
+function updateKeyDot(cfg) {
+  const active = !!(cfg.fredKey || cfg.twelveKey);
+  $('keyDot').classList.toggle('active', active);
+  $('keyDot').title = active
+    ? (cfg.fredKey ? 'FRED connected' : '') + (cfg.fredKey && cfg.twelveKey ? ' · ' : '') + (cfg.twelveKey ? 'Twelve Data connected' : '')
+    : 'No API keys set';
+}
+
+function openSettings() {
+  const cfg = loadSettings();
+  const fi = $('fredKeyInput');
+  const ti = $('twelveKeyInput');
+  fi.value = cfg.fredKey   || '';
+  ti.value = cfg.twelveKey || '';
+  fi.classList.toggle('has-value', !!cfg.fredKey);
+  ti.classList.toggle('has-value', !!cfg.twelveKey);
+  $('fredStatus').textContent   = '';
+  $('fredStatus').className     = 'api-status';
+  $('twelveStatus').textContent = '';
+  $('twelveStatus').className   = 'api-status';
+  $('settingsOverlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSettings() {
+  $('settingsOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function overlayClick(e) {
+  if (e.target === $('settingsOverlay')) closeSettings();
+}
+
+function saveSettings() {
+  const cfg = {
+    fredKey:   $('fredKeyInput').value.trim(),
+    twelveKey: $('twelveKeyInput').value.trim(),
+  };
+  persistSettings(cfg);
+  closeSettings();
+}
+
+function toggleReveal(inputId) {
+  const el = $(inputId);
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+function keyInputChange(inputId) {
+  const el = $(inputId);
+  el.classList.toggle('has-value', el.value.trim().length > 0);
+}
+
+function setApiStatus(id, msg, type) {
+  const el = $(id);
+  el.textContent = msg;
+  el.className   = `api-status ${type}`;
+}
+
+// ─────────────────────────────────────────────
+//  CORS-PROXY FETCH (Yahoo Finance fallback)
+// ─────────────────────────────────────────────
+const PROXIES = [
+  u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+  u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+];
+
+async function tryFetch(url, opts = {}) {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(5000), ...opts });
+    if (r.ok) return await r.json();
+  } catch (_) {}
+
+  for (const px of PROXIES) {
+    try {
+      const r = await fetch(px(url), { signal: AbortSignal.timeout(7000) });
+      if (!r.ok) continue;
+      const txt = await r.text();
+      const obj = JSON.parse(txt);
+      if (obj?.contents) return JSON.parse(obj.contents);
+      return obj;
+    } catch (_) {}
+  }
+  return null;
+}
+
+async function yfSeries(symbol) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1wk&range=1y`;
+  const data = await tryFetch(url);
+  const res = data?.chart?.result?.[0];
+  if (!res) return null;
+
+  const meta = res.meta;
+  const ts   = res.timestamp || [];
+  const raw  = res.indicators?.quote?.[0]?.close || [];
+  const pts  = ts.map((t, i) => ({ t, c: raw[i] })).filter(p => p.c != null);
+
+  const now = Date.now() / 1000;
+  const getAt = secAgo => {
+    const target = now - secAgo;
+    let best = null, bestD = Infinity;
+    for (const { t, c } of pts) {
+      const d = Math.abs(t - target);
+      if (d < bestD && t <= target + 8 * 86400) { bestD = d; best = c; }
+    }
+    return best;
+  };
+
+  const cur  = meta.regularMarketPrice;
+  const p3m  = getAt(91  * 86400);
+  const p6m  = getAt(182 * 86400);
+  const pct  = (a, b) => b ? +((a - b) / b * 100).toFixed(2) : null;
+
+  return { price: cur, chg3m: pct(cur, p3m), chg6m: pct(cur, p6m), p3m };
+}
+
+// ─────────────────────────────────────────────
+//  FRED API
+// ─────────────────────────────────────────────
+async function fetchFRED(key) {
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=${key}&sort_order=desc&limit=95&file_type=json`;
+  const data = await tryFetch(url); // FRED supports CORS natively
+  if (!data?.observations) throw new Error('Unexpected FRED response');
+
+  const valid = data.observations.filter(o => o.value !== '.' && o.value.trim() !== '');
+  if (!valid.length) throw new Error('No FRED observations');
+
+  const current = parseFloat(valid[0].value);
+
+  // Find the value closest to 90 calendar days ago
+  const target90 = new Date();
+  target90.setDate(target90.getDate() - 90);
+  const t90str = target90.toISOString().split('T')[0];
+
+  // valid is descending; scan backwards for first obs <= target
+  let prev3m = null;
+  for (let i = valid.length - 1; i >= 0; i--) {
+    if (valid[i].date <= t90str) { prev3m = parseFloat(valid[i].value); break; }
+  }
+  if (prev3m === null && valid.length > 1) prev3m = parseFloat(valid[valid.length - 1].value);
+
+  return { current, prev3m };
+}
+
+async function testFRED() {
+  const key = $('fredKeyInput').value.trim();
+  if (!key) { setApiStatus('fredStatus', 'Enter a key first.', 'err'); return; }
+  setApiStatus('fredStatus', '⏳ Testing…', 'busy');
+  try {
+    const res = await fetchFRED(key);
+    setApiStatus('fredStatus', `✓ Connected — current DGS10: ${res.current}%, 3-month ago: ${res.prev3m}%`, 'ok');
+  } catch (e) {
+    setApiStatus('fredStatus', `✗ Failed: ${e.message}`, 'err');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  TWELVE DATA API
+// ─────────────────────────────────────────────
+async function fetchTwelveData(key) {
+  // One batch call — Twelve Data returns a dict keyed by symbol
+  const symbols = 'SPX,XAU/USD,USD/MYR,^KLSE';
+  const url = `https://api.twelvedata.com/time_series?symbol=${encodeURIComponent(symbols)}&interval=1week&outputsize=27&apikey=${key}`;
+  const data = await tryFetch(url);
+  if (!data) throw new Error('No response from Twelve Data');
+  if (data.code === 400 || data.code === 401 || data.status === 'error')
+    throw new Error(data.message || `Error ${data.code}`);
+
+  const parseSeries = sym => {
+    const s = data[sym];
+    if (!s || s.status === 'error') return null;
+    const vals = s.values; // newest first
+    if (!vals?.length) return null;
+
+    const cur = parseFloat(vals[0].close);
+    const p3m = vals[13] ? parseFloat(vals[13].close) : null;
+    const p6m = vals[26] ? parseFloat(vals[26].close) : null;
+    const pct = (a, b) => b ? +((a - b) / b * 100).toFixed(2) : null;
+
+    return { price: cur, chg3m: pct(cur, p3m), chg6m: pct(cur, p6m), p3m };
+  };
+
+  return {
+    sp500:  parseSeries('SPX'),
+    gold:   parseSeries('XAU/USD'),
+    usdmyr: parseSeries('USD/MYR'),
+    klci:   parseSeries('^KLSE'),
+  };
+}
+
+async function testTwelve() {
+  const key = $('twelveKeyInput').value.trim();
+  if (!key) { setApiStatus('twelveStatus', 'Enter a key first.', 'err'); return; }
+  setApiStatus('twelveStatus', '⏳ Testing…', 'busy');
+  try {
+    const res = await fetchTwelveData(key);
+    const parts = [];
+    if (res.sp500)  parts.push(`SPX $${Math.round(res.sp500.price)}`);
+    if (res.gold)   parts.push(`Gold $${Math.round(res.gold.price)}`);
+    if (res.usdmyr) parts.push(`USD/MYR ${res.usdmyr.price.toFixed(3)}`);
+    if (res.klci)   parts.push(`KLCI ${Math.round(res.klci.price)}`);
+    if (!parts.length) throw new Error('No symbols returned');
+    setApiStatus('twelveStatus', `✓ Connected — ${parts.join(' · ')}`, 'ok');
+  } catch (e) {
+    setApiStatus('twelveStatus', `✗ Failed: ${e.message}`, 'err');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  MAIN FETCH ORCHESTRATOR
+// ─────────────────────────────────────────────
+async function fetchAll() {
+  setBusy(true);
+  showStatus('Fetching live market data…', 'info');
+
+  const cfg = loadSettings();
+  const used = [];
+  const failed = [];
+
+  // ── Step 1: Yahoo Finance via CORS proxy (base layer) ──
+  const yahooSyms = { us10y: '^TNX', sp500: '^GSPC', gold: 'GC=F', klci: '^KLSE', usdmyr: 'USDMYR=X' };
+  const yf = {};
+  await Promise.all(
+    Object.entries(yahooSyms).map(async ([k, sym]) => {
+      yf[k] = await yfSeries(sym);
+    })
+  );
+
+  let anyYf = false;
+  if (yf.us10y)  { setVal('us10y',  yf.us10y.price.toFixed(2),   true); anyYf = true; }
+  if (yf.us10y?.p3m) setVal('us10yPrev', yf.us10y.p3m.toFixed(2), true);
+  if (yf.sp500)  { setVal('sp500',  Math.round(yf.sp500.price),   true); anyYf = true; }
+  if (yf.sp500?.chg6m != null) setVal('sp6m', yf.sp500.chg6m.toFixed(1), true);
+  if (yf.gold)   { setVal('goldUsd', Math.round(yf.gold.price),   true); anyYf = true; }
+  if (yf.gold?.chg6m != null)  setVal('gold6m', yf.gold.chg6m.toFixed(1), true);
+  if (yf.klci)   { setVal('klci',   Math.round(yf.klci.price),    true); anyYf = true; }
+  if (yf.klci?.chg6m != null)  setVal('klci6m', yf.klci.chg6m.toFixed(1), true);
+  if (yf.usdmyr) {
+    setVal('usdmyr', yf.usdmyr.price.toFixed(3), true);
+    if (yf.gold) setVal('goldMyr', Math.round(yf.gold.price * yf.usdmyr.price), true);
+    anyYf = true;
+  }
+  if (anyYf) used.push('Yahoo Finance');
+  else failed.push('Yahoo Finance');
+
+  // ── Step 2: Twelve Data (overrides Yahoo Finance for price data) ──
+  if (cfg.twelveKey) {
+    try {
+      const td = await fetchTwelveData(cfg.twelveKey);
+      if (td.sp500)  { setVal('sp500',  Math.round(td.sp500.price),    true); }
+      if (td.sp500?.chg6m != null) setVal('sp6m', td.sp500.chg6m.toFixed(1), true);
+      if (td.gold)   { setVal('goldUsd', Math.round(td.gold.price),    true); }
+      if (td.gold?.chg6m != null)  setVal('gold6m', td.gold.chg6m.toFixed(1), true);
+      if (td.klci)   { setVal('klci',   Math.round(td.klci.price),     true); }
+      if (td.klci?.chg6m != null)  setVal('klci6m', td.klci.chg6m.toFixed(1), true);
+      if (td.usdmyr) {
+        setVal('usdmyr', td.usdmyr.price.toFixed(3), true);
+        if (td.gold) setVal('goldMyr', Math.round(td.gold.price * td.usdmyr.price), true);
+      }
+      used.push('Twelve Data');
+    } catch (e) {
+      failed.push(`Twelve Data (${e.message})`);
+    }
+  }
+
+  // ── Step 3: FRED (overrides yield fields — most authoritative) ──
+  if (cfg.fredKey) {
+    try {
+      const fr = await fetchFRED(cfg.fredKey);
+      setVal('us10y',    fr.current.toFixed(2),  true);
+      if (fr.prev3m != null) setVal('us10yPrev', fr.prev3m.toFixed(2), true);
+      used.push('FRED');
+    } catch (e) {
+      failed.push(`FRED (${e.message})`);
+    }
+  }
+
+  // ── Update timestamp + status ──
+  $('lastUpdated').textContent = `Last updated: ${new Date().toLocaleString('en-MY')}`;
+
+  const srcLine = used.length ? `Sources: ${used.join(' · ')}` : '';
+  const failLine = failed.length ? `  ✗ Failed: ${failed.join(', ')}` : '';
+
+  if (used.length && !failed.length) showStatus(`✓ All data loaded. ${srcLine}`, 'ok');
+  else if (used.length)              showStatus(`${srcLine}${failLine}`, 'warn');
+  else                               showStatus('Could not fetch any live data. Please enter values manually.', 'err');
+
+  setBusy(false);
+  runDiag();
+}
+
+// ─────────────────────────────────────────────
+//  DIAGNOSTIC ENGINE
+// ─────────────────────────────────────────────
+function setQ(n, score, label, value, interp) {
+  $(`q${n}badge`).textContent = label;
+  $(`q${n}badge`).className   = `badge ${score ? 'badge-' + score : 'badge-0'}`;
+  $(`q${n}val`).textContent   = value;
+  $(`q${n}interp`).textContent = interp;
+  for (let i = 1; i <= 4; i++)
+    $(`q${n}s${i}`).classList.toggle('on', i === score);
+}
+
+function runDiag() {
+  const isUS = diagMkt === 'US';
+
+  const yield10y  = isUS ? fld('us10y')     : fld('mgs10y');
+  const yieldPrev = isUS ? fld('us10yPrev') : fld('mgs10yPrev');
+  const eq6m      = isUS ? fld('sp6m')      : fld('klci6m');
+  const gold6m    = fld('gold6m');
+  const eqPrice   = isUS ? fld('sp500')     : fld('klci');
+  const goldPrice = fld('goldUsd');
+
+  // ── Q1 ──
+  let q1 = null, q1lbl = '–', q1val = '–', q1txt = 'Enter market data to run the diagnostic.';
+  if (yield10y !== null) {
+    q1val = `${yield10y.toFixed(2)}%`;
+    if (yield10y < 3.0) {
+      q1 = 1; q1lbl = 'Supportive';
+      q1txt = `At ${yield10y}%, the risk-free rate is low — equity valuations are well-supported. Capital actively seeks growth assets.`;
+    } else if (yield10y < 4.0) {
+      q1 = 2; q1lbl = 'Moderate';
+      q1txt = `At ${yield10y}%, rates are moderate. Some valuation headwind exists but not severe enough to choke equity demand.`;
+    } else if (yield10y < 5.0) {
+      q1 = 3; q1lbl = 'Elevated';
+      q1txt = `At ${yield10y}%, the risk-free rate competes seriously with equities. P/E multiples face meaningful compression pressure.`;
+    } else {
+      q1 = 4; q1lbl = 'High Pressure';
+      q1txt = `At ${yield10y}%, the risk-free rate is in active valuation-compression territory. High-quality bonds now rival equity expected returns.`;
+    }
+  }
+  setQ(1, q1, q1lbl, q1val, q1txt);
+
+  // ── Q2 ──
+  let q2 = null, q2lbl = '–', q2val = '–', q2txt = 'Enter the 3-month-ago yield to see the bond trend.';
+  if (yield10y !== null && yieldPrev !== null) {
+    const delta = +(yield10y - yieldPrev).toFixed(2);
+    q2val = `${delta >= 0 ? '+' : ''}${delta}%`;
+    if (delta < -0.25) {
+      q2 = 1; q2lbl = 'Falling';
+      q2txt = `Yield has fallen ${Math.abs(delta)}% over 3 months — bond prices rising. A supportive signal for equities.`;
+    } else if (delta <= 0.25) {
+      q2 = 2; q2lbl = 'Stable';
+      q2txt = `Yield is roughly flat (${q2val} over 3 months). No significant bond market stress signal.`;
+    } else if (delta <= 0.75) {
+      q2 = 3; q2lbl = 'Rising';
+      q2txt = `Yield has risen ${delta}% over 3 months — bond prices falling. Adds stress to valuations and leveraged positions.`;
+    } else {
+      q2 = 4; q2lbl = 'Surging';
+      q2txt = `Yield has surged ${delta}% over 3 months — even the "risk-free" asset is unsafe. A key late-cycle stress signal.`;
+    }
+  } else if (yield10y !== null) {
+    q2txt = 'Enter the 3-month-ago yield (or link FRED API above) to auto-calculate trend direction.';
+  }
+  setQ(2, q2, q2lbl, q2val, q2txt);
+
+  // ── Q3 ──
+  let q3 = null, q3lbl = '–', q3val = '–', q3txt = 'Enter 6-month changes for equities and gold.';
+  if (eq6m !== null && gold6m !== null) {
+    q3val = `EQ ${eq6m > 0 ? '+' : ''}${eq6m.toFixed(1)}%  /  Au ${gold6m > 0 ? '+' : ''}${gold6m.toFixed(1)}%`;
+    const eqStrong   = eq6m   > 7;
+    const goldStrong = gold6m > 7;
+    const goldDom    = gold6m > eq6m + 8;
+
+    if (eqStrong && !goldStrong) {
+      q3 = 1; q3lbl = 'Equities Lead';
+      q3txt = `Equities +${eq6m.toFixed(1)}% (6m), gold lagging. Capital flowing into risk assets — textbook healthy rotation.`;
+    } else if (eqStrong && goldStrong) {
+      q3 = 3; q3lbl = 'Both Rallying';
+      q3txt = `Equities (+${eq6m.toFixed(1)}%) AND gold (+${gold6m.toFixed(1)}%) both surging. The market is hedging both directions — a late-cycle contradiction.`;
+    } else if (goldDom || (goldStrong && !eqStrong)) {
+      q3 = 4; q3lbl = 'Gold Dominates';
+      q3txt = `Gold (+${gold6m.toFixed(1)}%) significantly outperforms equities (+${eq6m.toFixed(1)}%). Capital seeking safe haven — risk-off developing.`;
+    } else {
+      q3 = 2; q3lbl = 'Mixed';
+      q3txt = `No strong directional leadership from either equities or gold. Watch for a clearer signal.`;
+    }
+  }
+  setQ(3, q3, q3lbl, q3val, q3txt);
+
+  // ── Q4 ──
+  let q4 = null, q4lbl = '–', q4val = '–', q4txt = isUS
+    ? 'Enter S&P 500 and gold price to compute the ratio.'
+    : 'Enter KLCI and gold 6-month changes for relative performance.';
+
+  if (isUS && eqPrice !== null && goldPrice !== null) {
+    const ratio = +(eqPrice / goldPrice).toFixed(2);
+    q4val = `S&P / Gold = ${ratio}`;
+    if (ratio > 2.5) {
+      q4 = 1; q4lbl = 'Active Rally';
+      q4txt = `S&P/Gold ${ratio} — equities strongly outpace gold. Fundamentals-driven. Healthy signal.`;
+    } else if (ratio > 1.7) {
+      q4 = 2; q4lbl = 'Healthy';
+      q4txt = `S&P/Gold ${ratio} — equities modestly ahead. Normal mid-cycle posture.`;
+    } else if (ratio > 1.0) {
+      q4 = 3; q4lbl = 'Passive Rally';
+      q4txt = `S&P/Gold ${ratio} — gold keeping pace. The rally has a significant "nowhere to go" component. Fragile.`;
+    } else {
+      q4 = 4; q4lbl = 'Gold Leads';
+      q4txt = `S&P/Gold ${ratio} — gold dominates. Historically below 1.7 signals economic stress (2008, 2020, 1970s).`;
+    }
+    setQ(4, q4, q4lbl, q4val, q4txt);
+  } else if (!isUS && eq6m !== null && gold6m !== null) {
+    const outperf = +(eq6m - gold6m).toFixed(1);
+    q4val = `KLCI vs Gold: ${outperf > 0 ? '+' : ''}${outperf}%`;
+    if (outperf > 6) {
+      q4 = 1; q4lbl = 'Active Rally';
+      q4txt = `KLCI outperforming gold by ${outperf}% (6m). Active, fundamentals-driven local equities.`;
+    } else if (outperf > 0) {
+      q4 = 2; q4lbl = 'Healthy';
+      q4txt = `KLCI modestly ahead of gold (+${outperf}%). Normal; no strong passive signal.`;
+    } else if (outperf > -8) {
+      q4 = 3; q4lbl = 'Passive Rally';
+      q4txt = `Gold outperforming KLCI by ${Math.abs(outperf)}%. Fear component growing in local market returns.`;
+    } else {
+      q4 = 4; q4lbl = 'Gold Leads';
+      q4txt = `Gold significantly outperforming KLCI by ${Math.abs(outperf)}%. Risk-off regime.`;
+    }
+    setQ(4, q4, q4lbl, q4val, q4txt);
+  } else {
+    setQ(4, null, '–', '–', q4txt);
+  }
+
+  // ── Composite ──
+  const scores = [q1, q2, q3, q4].filter(s => s !== null);
+  if (scores.length >= 2) {
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    lastScores = { q1, q2, q3, q4, avg, n: scores.length };
+    const pct = Math.min(96, Math.max(4, ((avg - 1) / 3) * 100));
+    $('needle').style.left = `${pct}%`;
+    $('scoreNote').textContent = `Composite score: ${avg.toFixed(2)} / 4.00   (based on ${scores.length}/4 questions)`;
+    renderVerdict(avg, scores.length);
+  } else {
+    lastScores = null;
+    $('scoreNote').textContent = 'Enter data for at least 2 questions to see a verdict.';
+    $('verdictCard').style.display = 'none';
+    $('watchCard').style.display   = 'none';
+  }
+}
+
+// ─────────────────────────────────────────────
+//  VERDICT
+// ─────────────────────────────────────────────
+const STAGES = [
+  {
+    max: 1.75, cls: 'v-bull',
+    stage: 'Stage 1 — Early Bull', title: 'Early Bull Market',
+    desc: 'Low rates, bonds stable, money entering equities, gold quiet. The environment is supportive of risk-taking. Capital rotates into equities for fundamental reasons — earnings and growth expectations drive prices.',
+    posture: '🚀 Posture: Aggressive — lean into risk assets',
+    watch: [
+      '📈 Yield breakout above 3% would signal transition toward mid-cycle',
+      '🥇 Gold starting to rally alongside equities = early passive signal',
+      '📊 Confirm the rally is earnings-driven, not liquidity-driven',
+    ],
+  },
+  {
+    max: 2.5, cls: 'v-mid',
+    stage: 'Stage 2 — Mid-Cycle', title: 'Healthy Mid-Cycle',
+    desc: 'Rates moderate, equities leading, gold neglected. The rally appears active and fundamentals-driven. This is the most comfortable phase of the cycle — momentum is real and there is no urgent need to hedge.',
+    posture: '📈 Posture: Trend-follow — stay invested, no urgency to hedge',
+    watch: [
+      '📉 10Y yield creeping above 4.5% starts compressing P/E multiples',
+      '🥇 Gold beginning to keep pace with equities = first passive signal',
+      '🏦 Credit spreads widening = early warning of systemic stress',
+    ],
+  },
+  {
+    max: 3.25, cls: 'v-late',
+    stage: 'Stage 3 — Late-Cycle Defensive Rally', title: 'Late-Cycle Defensive Rally',
+    desc: 'Rates high, bonds sold off, equities AND gold both elevated — the rally has a large "nowhere to go" component. This is a passive, fragile environment. The party continues but someone is eyeing the exits.',
+    posture: '⚠️ Posture: Trend-follow with tight stops — hand near the exit',
+    watch: [
+      '🚨 10Y yield breaking above 5% → active valuation compression begins',
+      '🥇 Gold/equity ratio accelerating → escalating fear, possible shift to Risk-Off',
+      '📊 Earnings guidance showing first signs of margin compression',
+    ],
+  },
+  {
+    max: 4.01, cls: 'v-risk',
+    stage: 'Stage 4 — Risk-Off', title: 'Risk-Off / Correction',
+    desc: 'Equities rolling over, money fleeing to gold (and cash) rather than bonds. The passive rally has ended; active selling may be underway. Preservation of capital takes priority over return-seeking.',
+    posture: '🛡️ Posture: Defensive — cash, gold, short-duration bonds',
+    watch: [
+      '💵 Yield collapse (flight to bonds) signals peak fear / capitulation point',
+      '📉 Key support levels on major indices — watch for stabilisation',
+      '🏦 Central bank pivot signals are the main re-entry indicator',
+    ],
+  },
+];
+
+function renderVerdict(avg, n) {
+  const s = STAGES.find(x => avg < x.max);
+  if (!s) return;
+  const card = $('verdictCard');
+  card.className            = `verdict ${s.cls}`;
+  card.style.display        = 'block';
+  $('vStage').textContent   = s.stage;
+  $('vTitle').textContent   = s.title;
+  $('vDesc').textContent    = s.desc;
+  $('vPosture').textContent = s.posture;
+
+  const wl = $('watchList');
+  wl.innerHTML = s.watch.map(w =>
+    `<li class="watch-item"><span class="watch-icon">${w.charAt(0)}</span><span>${w.slice(2)}</span></li>`
+  ).join('');
+
+  if (n < 4) {
+    wl.insertAdjacentHTML('beforeend',
+      `<li class="watch-item" style="border-top:1px solid var(--border);margin-top:6px;padding-top:10px;">
+        <span class="watch-icon">ℹ️</span>
+        <span style="color:var(--muted)">Verdict based on ${n}/4 questions — enter more data for a complete picture.</span>
+      </li>`);
+  }
+  $('watchCard').style.display = 'block';
+}
+
+// ─────────────────────────────────────────────
+//  MARKET TAB
+// ─────────────────────────────────────────────
+function setMkt(mkt) {
+  diagMkt = mkt;
+  $('tabUS').classList.toggle('active', mkt === 'US');
+  $('tabMY').classList.toggle('active', mkt === 'MY');
+  runDiag();
+}
+
+// ─────────────────────────────────────────────
+//  HISTORY
+// ─────────────────────────────────────────────
+const LS_KEY = 'mcs_v1';
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; }
+}
+
+function verdictLabel(avg) { return (STAGES.find(s => avg < s.max) || STAGES.at(-1)).title; }
+function verdictColor(label) {
+  if (label.includes('Early'))  return 'var(--green)';
+  if (label.includes('Mid'))    return 'var(--blue)';
+  if (label.includes('Late'))   return 'var(--orange)';
+  return 'var(--red)';
+}
+const DOT_COLORS = ['var(--green)', 'var(--yellow)', 'var(--orange)', 'var(--red)'];
+
+function saveReading() {
+  if (!lastScores) { alert('Run the diagnostic first by entering data above.'); return; }
+  const rec = {
+    ts: new Date().toISOString(), mkt: diagMkt,
+    scores: lastScores, verdict: verdictLabel(lastScores.avg),
+    snap: {
+      us10y: fld('us10y'), sp500: fld('sp500'), goldUsd: fld('goldUsd'),
+      mgs10y: fld('mgs10y'), klci: fld('klci'), usdmyr: fld('usdmyr'),
+    },
+  };
+  const h = getHistory();
+  h.unshift(rec);
+  if (h.length > 60) h.length = 60;
+  localStorage.setItem(LS_KEY, JSON.stringify(h));
+  renderHistory();
+
+  const b = $('saveBtn');
+  b.textContent = '✓ Saved!';
+  setTimeout(() => { b.innerHTML = '&#128190; Save This Reading'; }, 2000);
+}
+
+function renderHistory() {
+  const h = getHistory();
+  const el = $('historyList');
+  if (!h.length) {
+    el.innerHTML = '<div class="h-empty">No readings saved yet. Run the diagnostic and click "Save This Reading".</div>';
+    return;
+  }
+  el.innerHTML = h.map(r => {
+    const fmt   = new Date(r.ts).toLocaleString('en-MY', { dateStyle: 'medium', timeStyle: 'short' });
+    const qs    = [r.scores.q1, r.scores.q2, r.scores.q3, r.scores.q4];
+    const dots  = qs.map(q => q
+      ? `<span class="dot" style="background:${DOT_COLORS[q-1]}"></span>`
+      : `<span class="dot dot-0"></span>`).join('');
+    const color = verdictColor(r.verdict);
+    const flag  = r.mkt === 'US' ? '🇺🇸' : '🇲🇾';
+    return `<li class="h-item">
+      <span class="h-date">${fmt}</span>
+      <span class="h-dots">${dots}</span>
+      <span class="h-verdict" style="color:${color}">${r.verdict}</span>
+      <span class="h-score">avg ${r.scores.avg.toFixed(2)}</span>
+      <span class="h-market">${flag}</span>
+    </li>`;
+  }).join('');
+}
+
+function clearHistory() {
+  if (confirm('Clear all saved readings?')) {
+    localStorage.removeItem(LS_KEY);
+    renderHistory();
+  }
+}
+
+function scrollToHistory() {
+  $('historySection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  updateKeyDot(loadSettings());
+  renderHistory();
+  fetchAll();
+});
+</script>
+</body>
+</html>
