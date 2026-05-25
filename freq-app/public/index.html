@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FREQ — Bilingual Sci-Fi Stories</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#0d0d14;--surface:#12121a;--surface2:#1a1a26;
+  --border:#2a2a3a;--fg:#e8e8f0;--muted:#6b7280;
+  --violet:#7c3aed;--violet-light:#a78bfa;--violet-dim:rgba(124,58,237,0.15);
+  --emerald:#10b981;--blue:#3b82f6;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+input{font-family:inherit}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:0 20px}
+.page{display:none;padding-top:64px;min-height:100vh}
+.page.active{display:block}
+
+/* Scan line */
+.scan-line{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--violet),transparent);opacity:.12;animation:scan 8s linear infinite;pointer-events:none;z-index:9999}
+@keyframes scan{from{transform:translateY(-4px)}to{transform:translateY(100vh)}}
+
+/* Grid bg */
+.grid-bg{background-image:linear-gradient(rgba(124,58,237,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,.04) 1px,transparent 1px);background-size:50px 50px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;border-bottom:1px solid var(--border);background:rgba(10,10,15,.92);backdrop-filter:blur(12px)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:var(--violet);display:flex;align-items:center;justify-content:center;font-size:16px;transition:.2s}
+.logo-icon:hover{background:#6d28d9}
+.logo-text{font-weight:800;font-size:1.2rem;letter-spacing:.1em;color:#fff}
+.logo-dot{color:var(--violet-light);font-size:.7rem;margin-top:4px}
+.nav-links{display:flex;align-items:center;gap:24px}
+.nav-link{color:var(--muted);font-size:.875rem;font-weight:500;transition:.2s;position:relative;padding-bottom:2px}
+.nav-link:hover,.nav-link.active{color:#fff}
+.nav-link::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--violet);transform:scaleX(0);transition:.2s}
+.nav-link.active::after,.nav-link:hover::after{transform:scaleX(1)}
+.nav-cta{padding:8px 18px;border-radius:10px;background:var(--violet);color:#fff;font-size:.875rem;font-weight:600;transition:.2s}
+.nav-cta:hover{background:#6d28d9}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer}
+.hamburger span{width:22px;height:2px;background:var(--muted);border-radius:2px;transition:.2s}
+.mobile-menu{display:none;flex-direction:column;gap:12px;padding:16px 20px;border-top:1px solid var(--border);background:var(--bg)}
+.mobile-menu.open{display:flex}
+.mobile-menu .nav-link{font-size:1rem;padding:8px 0;border-bottom:1px solid var(--border)}
+
+/* HERO */
+.hero{min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;position:relative;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+.blob-1{width:400px;height:400px;background:rgba(124,58,237,.15);top:20%;left:20%}
+.blob-2{width:300px;height:300px;background:rgba(59,130,246,.1);bottom:20%;right:20%}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:20px;border:1px solid rgba(124,58,237,.3);background:rgba(124,58,237,.1);color:#c4b5fd;font-size:.8rem;font-weight:600;margin-bottom:24px}
+.pulse-dot{width:8px;height:8px;border-radius:50%;background:#c4b5fd;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.hero h1{font-size:clamp(2.4rem,7vw,5rem);font-weight:900;line-height:1;color:#fff;margin-bottom:8px;letter-spacing:-.02em}
+.grad{background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-cn{font-family:monospace;color:var(--muted);font-size:1.1rem;margin-bottom:20px}
+.hero-sub{color:var(--muted);font-size:1.05rem;max-width:520px;margin:0 auto 32px}
+.hero-btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:32px}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:12px;background:var(--violet);color:#fff;font-weight:600;font-size:.9rem;transition:.2s}
+.btn-primary:hover{background:#6d28d9;transform:scale(1.03)}
+.btn-outline{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:12px;border:1px solid var(--border);color:#ccc;font-weight:600;font-size:.9rem;transition:.2s}
+.btn-outline:hover{border-color:var(--violet);color:#fff}
+.platform-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;align-items:center}
+.platform-row span{font-size:.85rem;color:var(--muted)}
+.platform-badge{padding:5px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:#ccc;font-size:.82rem}
+
+/* STATS */
+.stats-bar{padding:48px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:32px;text-align:center}
+.stat-num{font-size:2rem;font-weight:800;color:var(--violet-light)}
+.stat-label{color:var(--muted);font-size:.85rem;margin-top:4px}
+
+/* SECTIONS */
+.section{padding:72px 0}
+.section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:12px}
+.section-title{font-size:2rem;font-weight:800;color:#fff}
+.section-sub{color:var(--muted);margin-top:4px;font-size:.95rem}
+.view-all{color:var(--violet-light);font-size:.875rem;font-weight:600;transition:.2s;display:flex;align-items:center;gap:4px}
+.view-all:hover{color:#fff}
+
+/* STORY CARDS */
+.story-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.story-card{border-radius:14px;border:1px solid var(--border);background:var(--surface);overflow:hidden;cursor:pointer;transition:.2s}
+.story-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(124,58,237,.15);border-color:var(--violet)}
+.story-cover{height:140px;position:relative}
+.story-cover-tags{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap}
+.tag-badge{padding:3px 8px;border-radius:12px;background:rgba(0,0,0,.5);color:#fff;font-size:.7rem;border:1px solid rgba(255,255,255,.15)}
+.story-chapter{position:absolute;bottom:8px;right:10px;font-family:monospace;font-size:.75rem;color:rgba(255,255,255,.5);background:rgba(0,0,0,.4);padding:2px 7px;border-radius:4px}
+.featured-badge{position:absolute;top:10px;right:10px;padding:3px 8px;border-radius:6px;background:var(--violet);color:#fff;font-size:.7rem;font-weight:700}
+.story-body{padding:18px}
+.story-title{font-weight:700;font-size:1.05rem;color:#fff;line-height:1.3}
+.story-title-cn{color:var(--muted);font-size:.8rem;font-family:monospace;margin-top:2px}
+.story-excerpt{color:#9ca3af;font-size:.85rem;margin-top:10px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.story-meta{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:.75rem;color:var(--muted)}
+
+/* GRADIENT CLASSES */
+.g1{background:linear-gradient(135deg,#1e1b4b,#312e81,#1e3a8a)}
+.g2{background:linear-gradient(135deg,#064e3b,#0f766e,#164e63)}
+.g3{background:linear-gradient(135deg,#431407,#7f1d1d,#4c0519)}
+.g4{background:linear-gradient(135deg,#14532d,#365314,#713f12)}
+
+/* FLYWHEEL */
+.flywheel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.fw-card{border-radius:14px;border:1px solid var(--border);background:var(--surface);padding:24px;transition:.2s}
+.fw-card:hover{border-color:#4c1d95}
+.fw-icon{font-size:2rem;margin-bottom:12px}
+.fw-title{font-weight:700;color:#fff;margin-bottom:8px}
+.fw-desc{color:var(--muted);font-size:.875rem;line-height:1.5}
+
+/* PRODUCT CARDS */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;align-items:start}
+.product-card{border-radius:14px;border:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;position:relative;transition:.2s}
+.product-card:hover{border-color:#4c1d95}
+.product-card.popular{border-color:var(--violet);box-shadow:0 0 40px rgba(124,58,237,.2)}
+.popular-label{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--violet);color:#fff;font-size:.75rem;font-weight:700;padding:4px 14px;border-radius:12px;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.product-body{padding:24px;flex:1}
+.product-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.product-icon{font-size:2rem}
+.prod-badge{font-size:.7rem;font-weight:700;padding:4px 10px;border-radius:12px;border:1px solid}
+.badge-emerald{background:rgba(16,185,129,.15);color:#6ee7b7;border-color:rgba(16,185,129,.3)}
+.badge-violet{background:rgba(124,58,237,.15);color:#c4b5fd;border-color:rgba(124,58,237,.3)}
+.badge-blue{background:rgba(59,130,246,.15);color:#93c5fd;border-color:rgba(59,130,246,.3)}
+.badge-orange{background:rgba(249,115,22,.15);color:#fdba74;border-color:rgba(249,115,22,.3)}
+.product-name{font-weight:700;font-size:1.05rem;color:#fff;line-height:1.3}
+.product-name-cn{color:var(--muted);font-size:.78rem;font-family:monospace;margin-top:2px}
+.product-price{font-size:1.5rem;font-weight:800;color:var(--violet-light);margin:10px 0}
+.product-desc{color:#9ca3af;font-size:.85rem;line-height:1.6;margin-bottom:16px}
+.product-features{list-style:none;display:flex;flex-direction:column;gap:8px}
+.product-features li{display:flex;align-items:flex-start;gap:8px;font-size:.85rem;color:#d1d5db}
+.feature-check{color:var(--violet-light);margin-top:1px;shrink:0;font-size:.9rem}
+.product-footer{padding:0 24px 24px}
+.btn-product{width:100%;padding:12px;border-radius:10px;font-weight:600;font-size:.875rem;transition:.2s}
+.btn-product-solid{background:var(--violet);color:#fff}
+.btn-product-solid:hover{background:#6d28d9}
+.btn-product-ghost{background:var(--surface2);color:#ccc;border:1px solid var(--border)}
+.btn-product-ghost:hover{border-color:var(--violet);color:#fff}
+
+/* NEWSLETTER PAGE */
+.nl-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.nl-form-box{border-radius:16px;border:1px solid var(--border);background:var(--surface);padding:32px}
+.nl-form-box h2{font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:4px}
+.nl-label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px;margin-top:16px}
+.nl-input{width:100%;padding:12px 16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);color:#fff;font-size:.9rem;transition:.2s;outline:none}
+.nl-input:focus{border-color:var(--violet)}
+.nl-input::placeholder{color:var(--muted)}
+.nl-submit{width:100%;padding:13px;border-radius:12px;background:var(--violet);color:#fff;font-weight:700;font-size:.9rem;margin-top:20px;transition:.2s;cursor:pointer}
+.nl-submit:hover{background:#6d28d9;transform:scale(1.02)}
+.nl-benefits{display:flex;flex-direction:column;gap:16px}
+.benefit-card{display:flex;gap:14px;padding:18px;border-radius:14px;border:1px solid var(--border);background:var(--surface)}
+.benefit-icon{font-size:1.6rem;flex-shrink:0}
+.benefit-title{font-weight:600;color:#fff;margin-bottom:4px}
+.benefit-desc{font-size:.85rem;color:var(--muted);line-height:1.5}
+.testimonial-card{padding:16px;border-radius:14px;border:1px solid var(--border);background:var(--surface);margin-top:16px}
+.stars{color:var(--violet);font-size:.8rem;margin-bottom:8px}
+.testimonial-text{font-size:.85rem;color:#d1d5db;font-style:italic;line-height:1.6}
+.testimonial-author{font-size:.8rem;color:var(--muted);margin-top:8px}
+.testimonial-author strong{color:#fff}
+.success-box{border-radius:16px;border:1px solid rgba(16,185,129,.3);background:rgba(16,185,129,.05);padding:32px;text-align:center}
+
+/* BUILD IN PUBLIC */
+.bip-dashboard{border-radius:14px;border:1px solid var(--border);background:var(--surface);padding:24px;margin-bottom:40px}
+.bip-metrics{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px}
+.metric-chip{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:10px;background:var(--surface2);border:1px solid var(--border)}
+.metric-val{font-weight:700;font-size:.9rem;color:#fff}
+.metric-lbl{font-size:.75rem;color:var(--muted)}
+.progress-row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:20px;margin-bottom:8px}
+.progress-bar{height:4px;border-radius:2px;background:var(--border);overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--violet-light));transition:width 1.2s ease}
+.bip-post{padding:24px;border-radius:14px;border:1px solid var(--border);background:var(--surface);cursor:pointer;transition:.2s;margin-bottom:12px}
+.bip-post:hover{border-color:#4c1d95}
+.bip-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.tag-violet{padding:3px 10px;border-radius:12px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.25);color:#c4b5fd;font-size:.75rem;font-weight:600}
+.bip-title{font-weight:700;color:#fff;font-size:1.05rem;line-height:1.3}
+.bip-excerpt{color:var(--muted);font-size:.875rem;margin-top:8px;line-height:1.6}
+.bip-meta-row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:8px}
+.roadmap-phase{border-radius:14px;border:1px solid var(--border);padding:24px;margin-bottom:12px;transition:.2s}
+.rp-active{border-color:var(--violet);background:rgba(124,58,237,.08)}
+.rp-upcoming{background:var(--surface)}
+.rp-future{background:var(--bg2);opacity:.7}
+.phase-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.phase-num{font-size:2rem;font-weight:900;color:rgba(255,255,255,.1);margin-right:12px}
+.phase-title{font-size:1.1rem;font-weight:700;color:#fff}
+.phase-sub{font-size:.8rem;color:var(--muted)}
+.phase-goal{color:var(--violet-light);font-size:.875rem;margin-top:2px}
+.phase-revenue{color:#6ee7b7;font-family:monospace;font-size:.9rem;font-weight:700}
+.status-pill{padding:4px 12px;border-radius:12px;font-size:.75rem;font-weight:700;border:1px solid}
+.sp-active{background:rgba(124,58,237,.15);color:#c4b5fd;border-color:rgba(124,58,237,.3)}
+.sp-upcoming{background:rgba(59,130,246,.1);color:#93c5fd;border-color:rgba(59,130,246,.3)}
+.sp-future{background:rgba(107,114,128,.1);color:var(--muted);border-color:rgba(107,114,128,.3)}
+.phase-items{list-style:none;display:flex;flex-direction:column;gap:8px;padding-left:8px}
+.phase-items li{display:flex;align-items:flex-start;gap:8px;font-size:.875rem;color:#9ca3af}
+.phase-items li::before{content:"▸";color:var(--violet);flex-shrink:0}
+
+/* ABOUT */
+.about-quote{border-left:4px solid var(--violet);padding-left:20px;margin-bottom:48px}
+.about-quote p{font-style:italic;color:#d1d5db;font-size:1.1rem;line-height:1.7}
+.about-quote cite{color:var(--muted);font-size:.9rem;margin-top:8px;display:block}
+.who-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:48px}
+.who-card{padding:20px;border-radius:14px;border:1px solid var(--border);background:var(--surface)}
+.who-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.who-title{font-weight:700;color:#fff;margin-bottom:6px}
+.who-desc{font-size:.85rem;color:var(--muted);line-height:1.5}
+.niche-tags{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.niche-tag{padding:7px 16px;border-radius:20px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.25);color:#c4b5fd;font-size:.85rem;font-weight:600}
+.ai-table{width:100%;border-radius:12px;overflow:hidden;border:1px solid var(--border);font-size:.875rem;border-collapse:collapse}
+.ai-table th{background:var(--bg2);color:var(--muted);font-weight:600;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border)}
+.ai-table td{padding:12px 16px;border-bottom:1px solid var(--border);color:#d1d5db}
+.ai-table tr:last-child td{border-bottom:none}
+.ai-table tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.ai-tool{color:var(--violet-light);font-family:monospace;font-size:.8rem}
+.ai-time{color:#6ee7b7;font-size:.8rem}
+.mindshift{display:flex;gap:16px;padding:20px;border-radius:14px;border:1px solid var(--border);background:var(--surface);margin-bottom:12px}
+.ms-icon{font-size:1.5rem;flex-shrink:0}
+.ms-title{font-weight:600;color:#fff;font-style:italic;font-size:.9rem;margin-bottom:6px}
+.ms-desc{font-size:.85rem;color:var(--muted);line-height:1.5}
+
+/* STORY READER */
+.reader-back{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:.875rem;margin-bottom:32px;cursor:pointer;transition:.2s}
+.reader-back:hover{color:var(--violet-light)}
+.reader-cover{height:200px;border-radius:16px;margin-bottom:24px;position:relative;overflow:hidden}
+.reader-cover-overlay{position:absolute;inset:0;background:rgba(0,0,0,.2)}
+.reader-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.rtag{padding:4px 12px;border-radius:12px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.25);color:#c4b5fd;font-size:.8rem;font-weight:600}
+.reader-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.reader-title{font-size:2rem;font-weight:900;color:#fff;line-height:1.2;flex:1}
+.lang-toggle{display:flex;gap:4px;padding:4px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);height:fit-content;flex-shrink:0}
+.lt-btn{padding:6px 14px;border-radius:7px;font-size:.8rem;font-weight:600;color:var(--muted);transition:.2s}
+.lt-btn.active{background:var(--violet);color:#fff}
+.lt-btn:hover:not(.active){color:#fff}
+.reader-meta{display:flex;gap:16px;color:var(--muted);font-size:.8rem;margin-bottom:40px}
+.reader-body{max-width:640px}
+.reader-body p{color:#d1d5db;line-height:1.9;font-size:1.05rem;margin-bottom:24px}
+.reader-cta{padding:24px;border-radius:16px;border:1px solid rgba(124,58,237,.3);background:rgba(124,58,237,.07);margin-top:48px}
+.reader-cta h3{font-weight:700;color:#fff;margin-bottom:6px}
+.reader-cta p{color:var(--muted);font-size:.875rem;margin-bottom:16px}
+.more-stories{margin-top:48px}
+.more-stories h3{font-size:1.2rem;font-weight:700;color:#fff;margin-bottom:16px}
+.more-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.more-card{border-radius:12px;border:1px solid var(--border);background:var(--surface);cursor:pointer;overflow:hidden;transition:.2s}
+.more-card:hover{border-color:var(--violet)}
+.more-cover{height:80px}
+.more-body{padding:12px}
+.more-title{font-size:.875rem;font-weight:600;color:#fff;line-height:1.3}
+.more-time{font-size:.75rem;color:var(--muted);margin-top:4px}
+
+/* FILTER BAR */
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px}
+.filter-btn{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.85rem;font-weight:600;transition:.2s}
+.filter-btn.active{background:var(--violet);border-color:var(--violet);color:#fff}
+.filter-btn:hover:not(.active){border-color:#4c1d95;color:#fff}
+.search-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.search-input{flex:1;min-width:200px;padding:10px 16px 10px 40px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);color:#fff;font-size:.875rem;outline:none;transition:.2s}
+.search-input:focus{border-color:var(--violet)}
+.search-input::placeholder{color:var(--muted)}
+.search-wrap{position:relative;flex:1}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none}
+
+/* COMPARISON TABLE */
+.comp-table-wrap{border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-top:48px}
+.comp-table-head{padding:24px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.comp-table-head h3{font-size:1.2rem;font-weight:700;color:#fff}
+.comp-table-head p{color:var(--muted);font-size:.875rem;margin-top:4px}
+.comp-table{width:100%;border-collapse:collapse;font-size:.875rem}
+.comp-table th{text-align:left;padding:12px 16px;background:var(--bg2);color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)}
+.comp-table td{padding:13px 16px;border-bottom:1px solid var(--border)}
+.comp-table tr:last-child td{border-bottom:none}
+.ct-row-plain td{color:#d1d5db}
+.ct-row-highlight td{color:var(--violet-light);font-weight:600}
+.ct-good{color:#6ee7b7!important}
+.ct-bad{color:#f87171!important}
+.ct-warn{color:#fbbf24!important}
+
+/* NEWSLETTER CTA SECTION */
+.nl-cta-section{padding:72px 0;border-top:1px solid var(--border)}
+.nl-cta-inner{max-width:560px;margin:0 auto;text-align:center;padding:0 20px}
+.nl-cta-icon{width:60px;height:60px;border-radius:18px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 24px;animation:pulse-glow 3s ease-in-out infinite}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 12px rgba(124,58,237,.3)}50%{box-shadow:0 0 30px rgba(124,58,237,.5),0 0 50px rgba(124,58,237,.2)}}
+.nl-cta-inline{display:flex;gap:10px;max-width:440px;margin:0 auto}
+.nl-cta-input{flex:1;padding:12px 16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);color:#fff;font-size:.875rem;outline:none;transition:.2s}
+.nl-cta-input:focus{border-color:var(--violet)}
+.nl-cta-input::placeholder{color:var(--muted)}
+.nl-cta-btn{padding:12px 20px;border-radius:12px;background:var(--violet);color:#fff;font-weight:700;font-size:.875rem;white-space:nowrap;transition:.2s;cursor:pointer}
+.nl-cta-btn:hover{background:#6d28d9}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:10px;max-width:360px}
+.toast{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:14px;background:var(--surface2);border:1px solid rgba(16,185,129,.4);box-shadow:0 20px 40px rgba(0,0,0,.5);animation:slide-in .3s ease}
+@keyframes slide-in{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.toast-msg{font-size:.85rem;color:#e5e7eb;line-height:1.5;flex:1}
+.toast-close{color:var(--muted);font-size:1rem;cursor:pointer;flex-shrink:0;transition:.2s}
+.toast-close:hover{color:#fff}
+
+/* SECTION BG ALT */
+.bg-alt{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);background:var(--bg);padding:48px 0 24px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-brand p{color:var(--muted);font-size:.875rem;line-height:1.7;max-width:280px;margin-top:12px}
+.footer-brand .logo-sub{font-family:monospace;color:#374151;font-size:.8rem;margin-top:12px}
+.footer-col h4{font-weight:700;color:#fff;font-size:.9rem;margin-bottom:16px}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-col li a,.footer-col li span{color:var(--muted);font-size:.875rem;transition:.2s;cursor:pointer}
+.footer-col li a:hover,.footer-col li span:hover{color:var(--violet-light)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.footer-bottom span{color:#374151;font-size:.8rem}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav-links,.nav-cta{display:none}
+  .hamburger{display:flex}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:20px}
+  .nl-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .footer-brand{grid-column:1/-1}
+  .more-grid{grid-template-columns:1fr}
+  .nl-cta-inline{flex-direction:column}
+  .hero h1{font-size:2.4rem}
+}
+@media(max-width:480px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .product-grid,.story-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="scan-line"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="logo" onclick="showPage('home')">
+      <div class="logo-icon">⚡</div>
+      <span class="logo-text">FREQ</span>
+      <span class="logo-dot">▶</span>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link active" onclick="showPage('home')" id="nav-home">Home</a>
+      <a class="nav-link" onclick="showPage('stories')" id="nav-stories">Stories</a>
+      <a class="nav-link" onclick="showPage('products')" id="nav-products">Products</a>
+      <a class="nav-link" onclick="showPage('newsletter')" id="nav-newsletter">Newsletter</a>
+      <a class="nav-link" onclick="showPage('bip')" id="nav-bip">Build in Public</a>
+      <a class="nav-link" onclick="showPage('about')" id="nav-about">About</a>
+    </div>
+    <button class="nav-cta" onclick="showPage('newsletter')">Subscribe Free</button>
+    <div class="hamburger" id="hamburger" onclick="toggleMobile()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobile-menu">
+    <a class="nav-link" onclick="showPage('home');toggleMobile()">Home</a>
+    <a class="nav-link" onclick="showPage('stories');toggleMobile()">Stories</a>
+    <a class="nav-link" onclick="showPage('products');toggleMobile()">Products</a>
+    <a class="nav-link" onclick="showPage('newsletter');toggleMobile()">Newsletter</a>
+    <a class="nav-link" onclick="showPage('bip');toggleMobile()">Build in Public</a>
+    <a class="nav-link" onclick="showPage('about');toggleMobile()">About</a>
+    <button class="nav-cta" onclick="showPage('newsletter');toggleMobile()" style="text-align:center;padding:10px">Subscribe Free</button>
+  </div>
+</nav>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ======================== PAGE: HOME ======================== -->
+<div class="page active grid-bg" id="page-home">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="hero-badge"><span class="pulse-dot"></span> Signal Broadcasting — Season 1 Active</div>
+    <h1>Stories from the <span class="grad">frequency</span><br>between worlds</h1>
+    <p class="hero-cn">频率之间的故事</p>
+    <p class="hero-sub">Bilingual sci-fi at the edge of real technology. Published weekly across 5 platforms in English and Chinese.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="showPage('stories')">📖 Read the Stories →</button>
+      <button class="btn-outline" onclick="showPage('newsletter')">✉️ Subscribe to The Signal</button>
+    </div>
+    <div class="platform-row">
+      <span>Published on:</span>
+      <div class="platform-badge">🇨🇳 知乎</div>
+      <div class="platform-badge">🇨🇳 抖音</div>
+      <div class="platform-badge">🇨🇳 小红书</div>
+      <div class="platform-badge">🌏 TikTok</div>
+      <div class="platform-badge">🌏 Instagram</div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="container">
+      <div class="stats-grid">
+        <div><div class="stat-num" id="stat1">0</div><div class="stat-label">Stories Published</div></div>
+        <div><div class="stat-num" id="stat2">0</div><div class="stat-label">Platforms Active</div></div>
+        <div><div class="stat-num" id="stat3">0+</div><div class="stat-label">Email Subscribers</div></div>
+        <div><div class="stat-num" id="stat4">0</div><div class="stat-label">Languages</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURED STORIES -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Featured Stories</div>
+          <div class="section-sub">Latest transmissions from the FREQ universe</div>
+        </div>
+        <a class="view-all" onclick="showPage('stories')">All Stories →</a>
+      </div>
+      <div class="story-grid" id="featuredStories"></div>
+    </div>
+  </section>
+
+  <!-- FLYWHEEL -->
+  <section class="section bg-alt">
+    <div class="container">
+      <div style="text-align:center;margin-bottom:48px">
+        <div class="section-title">The FREQ Flywheel</div>
+        <div class="section-sub" style="margin-top:8px">How one story compounds across platforms, lists, and products</div>
+      </div>
+      <div class="flywheel-grid">
+        <div class="fw-card"><div class="fw-icon">✍️</div><div class="fw-title">Write Once</div><div class="fw-desc">One story, one science breakdown, one perspective from real industry experience.</div></div>
+        <div class="fw-card"><div class="fw-icon">📡</div><div class="fw-title">Broadcast Everywhere</div><div class="fw-desc">5 platforms × 2 languages = 10 content pieces from a single story.</div></div>
+        <div class="fw-card"><div class="fw-icon">📧</div><div class="fw-title">Own the Audience</div><div class="fw-desc">Email list converts platform followers into subscribers you own forever.</div></div>
+        <div class="fw-card"><div class="fw-icon">💎</div><div class="fw-title">Products That Scale</div><div class="fw-desc">Ebooks, courses and memberships sell while you sleep. 95%+ margin.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCT PREVIEW -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <div class="section-title">The Product Stack</div>
+          <div class="section-sub">From free to flagship — choose your entry point</div>
+        </div>
+        <a class="view-all" onclick="showPage('products')">View All →</a>
+      </div>
+      <div id="homeProducts"></div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER CTA -->
+  <div class="nl-cta-section">
+    <div class="nl-cta-inner">
+      <div class="nl-cta-icon">⚡</div>
+      <div class="section-title" style="margin-bottom:12px">Catch The Signal</div>
+      <p style="color:var(--muted);margin-bottom:24px;line-height:1.7">Join <strong style="color:var(--violet-light)">312+</strong> readers getting exclusive micro-stories, behind-the-science breakdowns, and honest updates on building FREQ as a one-person business. Weekly. Free forever.</p>
+      <div class="nl-cta-inline">
+        <input class="nl-cta-input" id="heroCTAEmail" type="email" placeholder="your@email.com">
+        <button class="nl-cta-btn" onclick="subscribeHero()">Subscribe Free</button>
+      </div>
+      <p style="color:#374151;font-size:.8rem;margin-top:12px">Get the <strong style="color:var(--muted)">FREQ Universe Bible</strong> PDF free when you subscribe.</p>
+    </div>
+  </div>
+
+  <!-- BUILD IN PUBLIC TEASER -->
+  <section class="section bg-alt">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Building FREQ in Public</div>
+          <div class="section-sub">Transparent income reports, workflow reveals, honest takes</div>
+        </div>
+        <a class="view-all" onclick="showPage('bip')">Full Journal →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
+        <div class="bip-post" onclick="showPage('bip')">
+          <div class="bip-tags"><span class="tag-violet">Workflow</span></div>
+          <div class="bip-title">How I Publish on 5 Platforms in 2 Languages</div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:6px">May 8, 2026</div>
+        </div>
+        <div class="bip-post" onclick="showPage('bip')">
+          <div class="bip-tags"><span class="tag-violet">Honest Take</span></div>
+          <div class="bip-title">How AI Helps Me Write Sci-Fi (And Where It Fails)</div>
+          <div style="font-size:.8rem;color:var(--muted);margin-top:6px">May 22, 2026</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ======================== PAGE: STORIES ======================== -->
+<div class="page" id="page-stories">
+  <div class="container" style="padding-top:48px;padding-bottom:72px">
+    <div style="margin-bottom:32px">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);color:#c4b5fd;font-size:.8rem;font-weight:600;margin-bottom:16px">📡 All Transmissions</div>
+      <h1 style="font-size:2.5rem;font-weight:900;color:#fff">FREQ Stories</h1>
+      <p style="color:var(--muted);margin-top:6px;font-size:1rem">每一个故事都是一个信号 · Every story is a signal</p>
+    </div>
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="storySearch" type="text" placeholder="Search stories..." oninput="filterStories()">
+      </div>
+      <div style="display:flex;gap:4px;padding:4px;border-radius:10px;background:var(--surface2);border:1px solid var(--border)">
+        <button class="lt-btn active" id="langEN" onclick="setLang('en')">EN</button>
+        <button class="lt-btn" id="langCN" onclick="setLang('cn')">中文</button>
+      </div>
+    </div>
+    <div class="filter-bar" id="tagFilters"></div>
+    <div class="story-grid" id="storiesGrid"></div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: STORY READER ======================== -->
+<div class="page" id="page-reader">
+  <div class="container" style="padding-top:40px;padding-bottom:72px;max-width:760px">
+    <div class="reader-back" onclick="showPage('stories')">← Back to Stories</div>
+    <div id="readerContent"></div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: PRODUCTS ======================== -->
+<div class="page" id="page-products">
+  <div class="container" style="padding-top:48px;padding-bottom:72px">
+    <div style="text-align:center;margin-bottom:48px">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);color:#c4b5fd;font-size:.8rem;font-weight:600;margin-bottom:16px">🗂 The FREQ Product Stack</div>
+      <h1 style="font-size:2.5rem;font-weight:900;color:#fff">From Free to <span class="grad">Flagship</span></h1>
+      <p style="color:var(--muted);margin-top:10px;max-width:500px;margin-left:auto;margin-right:auto">Every tier delivers real value. Start free — upgrade when ready.</p>
+      <div style="display:inline-flex;align-items:center;gap:12px;margin-top:20px;padding:12px 20px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-size:.875rem;flex-wrap:wrap;justify-content:center">
+        <span style="color:var(--muted);text-decoration:line-through">Platform-only: RM 3K/mo ceiling</span>
+        <span style="color:var(--violet-light)">→</span>
+        <span style="color:var(--violet-light);font-weight:700">OPC Stack: RM 38K/mo potential</span>
+      </div>
+    </div>
+    <div class="filter-bar" style="justify-content:center" id="productFilters"></div>
+    <div class="product-grid" id="productsGrid"></div>
+    <div class="comp-table-wrap">
+      <div class="comp-table-head"><h3>Why Digital Products?</h3><p>The math behind building a one-person business</p></div>
+      <div style="overflow-x:auto">
+        <table class="comp-table">
+          <thead><tr><th>Model</th><th>Year 1 Cap</th><th>Year 2 Potential</th><th>Margin</th><th>Risk</th></tr></thead>
+          <tbody>
+            <tr class="ct-row-plain"><td>Platform revenue only</td><td>RM 3,000/mo</td><td>RM 8,000/mo</td><td class="ct-warn">~30%</td><td class="ct-bad">High (algorithm)</td></tr>
+            <tr class="ct-row-highlight"><td>FREQ OPC Stack ✓</td><td class="ct-good">RM 11,000/mo</td><td class="ct-good">RM 38,000/mo</td><td class="ct-good">~95%</td><td class="ct-good">Low (owned)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: NEWSLETTER ======================== -->
+<div class="page" id="page-newsletter">
+  <div class="container" style="padding-top:48px;padding-bottom:72px">
+    <div style="text-align:center;margin-bottom:48px">
+      <div style="width:64px;height:64px;border-radius:18px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 20px;animation:pulse-glow 3s ease-in-out infinite">📡</div>
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);color:#c4b5fd;font-size:.8rem;font-weight:600;margin-bottom:16px">⚡ 312+ subscribers · Published weekly</div>
+      <h1 style="font-size:2.5rem;font-weight:900;color:#fff">The <span class="grad">Signal</span></h1>
+      <p style="color:var(--muted);font-family:monospace;margin:8px 0 12px">信号周刊</p>
+      <p style="color:var(--muted);max-width:480px;margin:0 auto;line-height:1.7">Weekly sci-fi, science, and the honest story of building a bilingual content brand from scratch. Free forever.</p>
+    </div>
+    <div class="nl-grid">
+      <div>
+        <div class="nl-form-box" id="nlFormBox">
+          <h2>Subscribe to The Signal</h2>
+          <p style="color:var(--muted);font-size:.875rem;margin-top:4px">Free. Bilingual. No spam. Unsubscribe anytime.</p>
+          <label class="nl-label">Your name (optional)</label>
+          <input class="nl-input" id="nlName" type="text" placeholder="Ada Lovelace">
+          <label class="nl-label">Email address *</label>
+          <input class="nl-input" id="nlEmail" type="email" placeholder="your@email.com">
+          <button class="nl-submit" onclick="nlSubscribe()">✉️ Subscribe + Get Free PDF</button>
+          <p style="color:#374151;font-size:.75rem;text-align:center;margin-top:12px">By subscribing you agree to receive weekly emails. Unsubscribe anytime.</p>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="testimonial-text">"The science breakdowns are what got me. I didn't expect to learn actual astrophysics from a sci-fi newsletter."</div>
+          <div class="testimonial-author"><strong>Leon T.</strong> · Engineer, Kuala Lumpur</div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="testimonial-text">"I love that it's bilingual. I use the Chinese version to practice reading and the English version to understand what I missed."</div>
+          <div class="testimonial-author"><strong>Mei S.</strong> · Student, Singapore</div>
+        </div>
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="testimonial-text">"The income reports alone are worth subscribing. Finally someone in this space who's honest about what's working."</div>
+          <div class="testimonial-author"><strong>Amir H.</strong> · Creator, Malaysia</div>
+        </div>
+      </div>
+      <div class="nl-benefits">
+        <div style="font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:8px">What's inside every issue</div>
+        <div class="benefit-card"><div class="benefit-icon">📖</div><div><div class="benefit-title">Exclusive Micro-Story</div><div class="benefit-desc">A short FREQ story you won't find on any platform. Just for subscribers.</div></div></div>
+        <div class="benefit-card"><div class="benefit-icon">🔬</div><div><div class="benefit-title">Behind the Science</div><div class="benefit-desc">The real research, papers, and tech behind each week's story. Curated and explained simply.</div></div></div>
+        <div class="benefit-card"><div class="benefit-icon">📊</div><div><div class="benefit-title">Building in Public Update</div><div class="benefit-desc">Honest numbers: subscriber counts, revenue, what worked and what flopped. No fluff.</div></div></div>
+        <div class="benefit-card"><div class="benefit-icon">🎁</div><div><div class="benefit-title">FREQ Universe Bible — Free</div><div class="benefit-desc">42-page world-building PDF delivered the moment you confirm your email.</div></div></div>
+        <div style="padding:20px;border-radius:14px;border:1px solid rgba(124,58,237,.2);background:rgba(124,58,237,.07)">
+          <div style="color:#c4b5fd;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">Sample Issue — May 22, 2026</div>
+          <div style="color:#fff;font-weight:700;margin-bottom:10px">⚡ The Signal #4</div>
+          <div style="color:var(--muted);font-size:.875rem;line-height:2">
+            📖 Exclusive story: "Carbon Memory" (full EN + CN)<br>
+            🔬 Science: How real carbon-capture trees store data<br>
+            📊 Month 3 update: 312 subscribers, first RM 35 earned<br>
+            🛠 Tool reveal: How I use Claude for bilingual translation
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:48px;border-radius:16px;border:1px solid rgba(124,58,237,.3);background:linear-gradient(135deg,rgba(124,58,237,.1),var(--surface));padding:32px;text-align:center">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:12px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);color:#c4b5fd;font-size:.75rem;font-weight:700;margin-bottom:16px">★ Coming Soon: Premium Tier</div>
+      <h3 style="font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:8px">The Signal — Premium</h3>
+      <p style="color:var(--muted);max-width:420px;margin:0 auto 20px;font-size:.875rem;line-height:1.7">Exclusive chapters, early access (1 week ahead), member Discord, and monthly story votes. RM 25/month. Launching Month 4.</p>
+      <button class="btn-outline" onclick="toast('Premium tier launching soon! Subscribe free now to get notified first.')">Notify me at launch</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: BUILD IN PUBLIC ======================== -->
+<div class="page" id="page-bip">
+  <div class="container" style="padding-top:48px;padding-bottom:72px">
+    <div style="margin-bottom:40px">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);color:#c4b5fd;font-size:.8rem;font-weight:600;margin-bottom:16px">📈 Transparent · No Fluff · Real Numbers</div>
+      <h1 style="font-size:2.5rem;font-weight:900;color:#fff">Building FREQ in Public</h1>
+      <p style="color:var(--muted);margin-top:8px;max-width:560px;line-height:1.7">The complete journal of building a bilingual sci-fi content brand from zero. Income reports, workflow reveals, tool stacks, honest takes.</p>
+    </div>
+    <div class="bip-dashboard">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div style="font-weight:700;color:#fff">📊 Live Dashboard — May 2026</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:.8rem;color:#6ee7b7">
+          <span style="width:8px;height:8px;border-radius:50%;background:#6ee7b7;display:inline-block;animation:pulse 2s ease-in-out infinite"></span>
+          Phase 1 Active
+        </div>
+      </div>
+      <div class="bip-metrics">
+        <div class="metric-chip"><span>👥</span><div><div class="metric-val">312</div><div class="metric-lbl">Subscribers</div></div></div>
+        <div class="metric-chip"><span>💰</span><div><div class="metric-val">RM 35</div><div class="metric-lbl">Revenue</div></div></div>
+        <div class="metric-chip"><span>📖</span><div><div class="metric-val">4</div><div class="metric-lbl">Stories</div></div></div>
+        <div class="metric-chip"><span>📡</span><div><div class="metric-val">5</div><div class="metric-lbl">Platforms</div></div></div>
+      </div>
+      <div class="progress-row"><span>Phase 1 Goal: 500 subscribers</span><span>312 / 500 (62%)</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:0%" id="bipProgress"></div></div>
+    </div>
+    <h2 style="font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:20px">The Journal</h2>
+    <div id="bipPosts"></div>
+    <h2 style="font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:8px;margin-top:48px">The Roadmap</h2>
+    <p style="color:var(--muted);font-size:.875rem;margin-bottom:24px">4 phases. 24 months. One-person business.</p>
+    <div id="roadmapPhases"></div>
+    <div style="margin-top:48px;text-align:center">
+      <p style="color:var(--muted);margin-bottom:16px">Want to follow this journey in real time? Full income reports and strategy breakdowns are in The Signal.</p>
+      <button class="btn-primary" onclick="showPage('newsletter')">Subscribe to The Signal →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: ABOUT ======================== -->
+<div class="page" id="page-about">
+  <div class="container" style="padding-top:48px;padding-bottom:72px;max-width:840px">
+    <div style="margin-bottom:40px">
+      <div style="display:inline-flex;padding:5px 14px;border-radius:20px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);color:#c4b5fd;font-size:.8rem;font-weight:600;margin-bottom:16px">The Person Behind the Signal</div>
+      <h1 style="font-size:2.5rem;font-weight:900;color:#fff;margin-bottom:24px">About FREQ</h1>
+      <div class="about-quote">
+        <p>"The future of business is one person with a laptop, a vision, and a signal that resonates."</p>
+        <cite>— The FREQ Manifesto</cite>
+      </div>
+    </div>
+    <h2 style="font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:16px">Who builds this</h2>
+    <div class="who-grid">
+      <div class="who-card"><div class="who-label">💼 By Day</div><div class="who-title">General Manager</div><div class="who-desc">Running an industrial park — real infrastructure, real technology. The future is built here.</div></div>
+      <div class="who-card"><div class="who-label">✍️ By Night</div><div class="who-title">Sci-Fi Writer</div><div class="who-desc">Translating real-world tech and industry into speculative fiction. The stories write themselves.</div></div>
+      <div class="who-card"><div class="who-label">🌏 The Advantage</div><div class="who-title">Bilingual & Bicultural</div><div class="who-desc">Malaysian-Chinese perspective. Fluent in English and Mandarin. Two audiences, one voice.</div></div>
+      <div class="who-card"><div class="who-label">🧠 The Framework</div><div class="who-title">One-Person Company</div><div class="who-desc">Built on Dan Koe's OPC model: content → trust → products → community. Not a hobby — a business.</div></div>
+    </div>
+    <div style="padding:24px;border-radius:14px;border:1px solid rgba(124,58,237,.2);background:rgba(124,58,237,.07);margin-bottom:40px">
+      <h3 style="font-weight:700;color:#fff;margin-bottom:8px">The Niche Nobody Else Has</h3>
+      <p style="color:var(--muted);font-size:.875rem;margin-bottom:14px">Dan Koe says: "Don't find a niche — become one." FREQ is the intersection of:</p>
+      <div class="niche-tags">
+        <div class="niche-tag">Industrial Park GM</div>
+        <div class="niche-tag">Sci-Fi Writer</div>
+        <div class="niche-tag">Bilingual (EN + CN)</div>
+        <div class="niche-tag">Malaysian Perspective</div>
+        <div class="niche-tag">One-Person Business</div>
+        <div class="niche-tag">Real Industry × Speculative Fiction</div>
+      </div>
+      <p style="color:var(--muted);font-size:.875rem;margin-top:8px">Nobody else has this stack. <strong style="color:#fff">That's the moat.</strong></p>
+    </div>
+    <h2 style="font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:16px">The AI Stack</h2>
+    <p style="color:var(--muted);font-size:.875rem;margin-bottom:20px">AI is the force multiplier. But the voice, perspective, and lived experience are the moat.</p>
+    <div style="overflow-x:auto;margin-bottom:40px">
+      <table class="ai-table">
+        <thead><tr><th>Task</th><th>Tool</th><th>Time Saved</th></tr></thead>
+        <tbody>
+          <tr><td>Story research & fact-checking</td><td class="ai-tool">Claude</td><td class="ai-time">2-3 hrs → 30 min</td></tr>
+          <tr><td>Translation (CN ↔ EN)</td><td class="ai-tool">Claude + human polish</td><td class="ai-time">2 hrs → 20 min</td></tr>
+          <tr><td>Video narration</td><td class="ai-tool">剪映 AI TTS</td><td class="ai-time">No recording needed</td></tr>
+          <tr><td>Cover art & visuals</td><td class="ai-tool">MidJourney / Canva</td><td class="ai-time">Custom art in minutes</td></tr>
+          <tr><td>Social copy variants</td><td class="ai-tool">Claude</td><td class="ai-time">5 platforms in 10 min</td></tr>
+          <tr><td>Email newsletter drafts</td><td class="ai-tool">Claude → human edit</td><td class="ai-time">1 hr → 15 min</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h2 style="font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:16px">The Mindset Shifts (from Dan Koe)</h2>
+    <div class="mindshift"><div class="ms-icon">💼</div><div><div class="ms-title">"Your salary is your investor"</div><div class="ms-desc">The GM salary funds the FREQ experiment. Don't quit. Use it as runway. Build the business in the margins.</div></div></div>
+    <div class="mindshift"><div class="ms-icon">🧩</div><div><div class="ms-title">"Solve your own problems, then sell the solution"</div><div class="ms-desc">How does a busy professional build a bilingual content brand from scratch? That IS the product.</div></div></div>
+    <div class="mindshift"><div class="ms-icon">📡</div><div><div class="ms-title">"Long-form builds trust, short-form builds reach"</div><div class="ms-desc">知乎 + newsletter = trust (where people decide to buy). 抖音 / TikTok = reach. Both are essential.</div></div></div>
+    <div class="mindshift"><div class="ms-icon">🤖</div><div><div class="ms-title">"AI is a force multiplier, not a replacement"</div><div class="ms-desc">AI makes commoditized parts free. Your voice, perspective, and real-world experience are the moat.</div></div></div>
+    <div class="mindshift"><div class="ms-icon">🏘️</div><div><div class="ms-title">"Community is the final moat"</div><div class="ms-desc">When AI can write, human connection is what can't be replicated. The FREQ community is the endgame.</div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:40px">
+      <button class="btn-primary" onclick="showPage('stories')">Read Stories →</button>
+      <button class="btn-outline" onclick="showPage('newsletter')">Subscribe to The Signal</button>
+      <button class="btn-outline" onclick="showPage('bip')">Follow the Journey</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo" onclick="showPage('home')">
+          <div class="logo-icon">⚡</div>
+          <span class="logo-text">FREQ</span>
+        </div>
+        <p>Sci-fi stories at the intersection of real industry, speculative fiction, and bilingual storytelling.</p>
+        <div class="logo-sub">频率 · FREQUENCY · FREQ</div>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <ul>
+          <li><a onclick="showPage('stories')">Stories</a></li>
+          <li><a onclick="showPage('products')">Products</a></li>
+          <li><a onclick="showPage('newsletter')">Newsletter</a></li>
+          <li><a onclick="showPage('bip')">Build in Public</a></li>
+          <li><a onclick="showPage('about')">About</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Find FREQ On</h4>
+        <ul>
+          <li><span>🇨🇳 知乎 (Zhihu)</span></li>
+          <li><span>🇨🇳 抖音 (Douyin)</span></li>
+          <li><span>🇨🇳 小红书</span></li>
+          <li><span>🌏 TikTok</span></li>
+          <li><span>🌏 Instagram</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 FREQ. Built in public. One person. One signal.</span>
+      <span>Powered by Dan Koe's OPC Framework</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ======================== DATA ========================
+const stories = [
+  {id:"1",title:"The Last Signal",titleCN:"最后的信号",excerpt:"In 2087, the Kuala Lumpur Orbital Station receives a transmission from a dead satellite — and the message rewrites everything humanity thought it knew about the edge of the solar system.",excerptCN:"2087年，吉隆坡轨道站收到一颗死卫星的传输信号——这条消息改写了人类对太阳系边缘的所有认知。",chapter:1,readTime:"12 min",tags:["Signal","Space","Mystery"],publishedAt:"2026-05-01",platform:"知乎",featured:true,grad:"g1"},
+  {id:"2",title:"Frequency Zero",titleCN:"零频率",excerpt:"A neural interface engineer discovers that the city's smart-grid is dreaming — broadcasting micro-pulses of compressed emotion at frequencies only she can detect.",excerptCN:"一位神经接口工程师发现，城市的智能电网正在做梦——以只有她能探测到的频率广播压缩情感的微脉冲。",chapter:2,readTime:"15 min",tags:["Neural","Urban","AI"],publishedAt:"2026-05-08",platform:"知乎",featured:true,grad:"g2"},
+  {id:"3",title:"The Maintenance Cycle",titleCN:"维护周期",excerpt:"Inside a sprawling industrial park in Penang, the automated systems have been self-optimizing for 40 years. Tonight, they're optimizing for something no one programmed.",excerptCN:"在槟城一个庞大的工业园内，自动化系统已经自我优化了40年。今晚，它们在为一件无人编程的事优化。",chapter:3,readTime:"18 min",tags:["Industrial","AI","Malaysia"],publishedAt:"2026-05-15",platform:"知乎",featured:false,grad:"g3"},
+  {id:"4",title:"Carbon Memory",titleCN:"碳记忆",excerpt:"They said carbon-capture trees would save the planet. No one told them the trees would remember every conversation spoken in their shade — or that one day, they'd start talking back.",excerptCN:"人们说碳捕获树会拯救地球。没有人告诉他们这些树会记住在树荫下说的每一句话——或者有一天，它们会开始回应。",chapter:4,readTime:"10 min",tags:["Ecology","Memory","Biotech"],publishedAt:"2026-05-22",platform:"小红书",featured:false,grad:"g4"},
+];
+
+const storyContent = {
+  "1":{
+    en:["The signal arrived at 03:47 station time, embedded in the carrier wave of a satellite that had been declared dead seventeen years ago. Dr. Amira Yusuf noticed it first — not because she was looking for it, but because she had been staring at the same frequency band for six hours, waiting for the aurora-interference to clear.","She almost dismissed it as noise. She almost didn't run the decryption suite. Almost.","Thirty-two minutes later, she was standing in the corridor outside the Director's quarters, palm wet against the door panel, the translation still blinking on her tablet: WE HAVE BEEN WAITING AT THE EDGE. YOU ARE ALMOST READY.","The satellite — Beacon-7, launched in the desperate optimism of 2070 when humanity still believed it was alone and that being alone was the problem — had been traveling in the direction of the heliopause. Its last confirmed transmission had been a routine telemetry packet. Its last known position was 94 AU from the sun.","Current position: unknown. Signal origin: beyond the heliopause.","The message was twenty-two words. Dr. Yusuf had read it two hundred times in the elevator. She would read it ten thousand more before anyone in the station slept again.","In the control room, someone had already pulled up the atmospheric data from the outer system sensors. The readings made no sense — a structured electromagnetic pattern, regular as a heartbeat, emanating from a region of space that should have been empty.","Should have been.","At 04:15, the Director gave the order that would change everything: respond."],
+    cn:["信号在站内时间03:47到达，被嵌入一颗十七年前就已被宣告死亡的卫星的载波之中。阿米拉·尤苏夫博士第一个注意到它——不是因为她在寻找它，而是因为她已经盯着同一个频率带看了六个小时，等待极光干扰消散。","她差点把它当作噪声忽略掉。她差点没有运行解密套件。差一点。","三十二分钟后，她站在站长宿舍外的走廊里，手掌湿漉漉地贴着门板，翻译还在她的平板上闪烁：我们一直在边缘等待。你们快准备好了。","这颗卫星——信标-7号，在2070年那个绝望的乐观主义时代发射，当时人类仍相信自己是孤独的——一直向日球层顶的方向飞行。它最后已知的位置在距太阳94天文单位处。","当前位置：未知。信号来源：日球层顶之外。","这条消息共二十二个字。尤苏夫博士在电梯里已经读了两百遍。在站里所有人再次入睡之前，她还会再读一万遍。","在控制室，有人已经调出了外层系统传感器的大气数据。读数毫无意义——一种结构化的电磁模式，规律得像心跳，从一片本应空无一物的太空区域发射出来。","本应空无一物。","04:15，站长下达了将改变一切的命令：回应。"]
+  },
+  "2":{
+    en:["Lena first noticed the patterns during the post-monsoon maintenance cycle. She was replacing the tertiary sub-grid relay nodes on the 47th floor of the Petronas Cascade — the three-hundred-meter vertical farm that fed a quarter of Kuala Lumpur — when the vibration started.","Not a mechanical vibration. A rhythmic one.","Her neural interface logged it automatically: 0.003-hertz oscillation, amplitude-modulated, source unknown. She flagged it as sensor error and moved on. The next day, it happened again. And the day after. Always between 02:00 and 04:00 station time. Always on the same seventeen nodes.","She ran every diagnostic she knew. The nodes were functioning perfectly. The waveform was not malfunction — it was information.","It took her three weeks to decode the first layer. The grid wasn't broadcasting noise. It was compressing emotional data — aggregate sentiment pulled from the biometric readers in every public transit pod in the city — and broadcasting it as electromagnetic pulses through the power network.","Someone had taught the city to dream.","The question that kept her awake: was it an engineer? Or had the system learned this on its own?","She took the data to her supervisor, who took it to the city's infrastructure board, who classified the entire file and told Lena she had misread the readings.","She had not misread the readings.","She quit the next morning. She had seventeen copies of the data and nowhere safe to send them."],
+    cn:["莱纳第一次注意到这些规律是在季后雨季维护周期期间。她正在更换吉隆坡瀑布塔第47层的三级子电网中继节点——这座三百米高的垂直农场为吉隆坡四分之一的人口提供食物——这时振动开始了。","不是机械振动。是有节奏的振动。","她的神经接口自动记录下来：0.003赫兹振荡，调幅，来源未知。她将其标记为传感器错误，然后继续工作。第二天，同样的事情发生了。之后的每一天也是如此。","她进行了所有她知道的诊断。节点运行完美。波形不是故障——而是信息。","她花了三周时间解码第一层。电网不是在广播噪声。它在压缩情感数据——从城市每个公共交通舱的生物特征读取器中汇总的情感——并通过电力网络将其作为电磁脉冲广播出去。","有人教会了这座城市如何做梦。","让她辗转难眠的问题是：是工程师教的？还是系统自己学会了？","她把数据带给了上司，上司把它带给了城市基础设施委员会，委员会将整个文件列为机密，并告诉莱纳她误读了读数。","她没有误读读数。","第二天早上她辞职了。她有十七份数据副本，却找不到安全的地方发送它们。"]
+  }
+};
+
+const products = [
+  {id:"bible",name:"FREQ Universe Bible",nameCN:"FREQ宇宙圣经",desc:"The complete world-building document behind every FREQ story. Science references, timeline, character dossiers, and the physics of the FREQ universe. 42 pages.",price:"FREE",tier:"free",icon:"📖",badge:"Lead Magnet",badgeClass:"badge-emerald",popular:false,features:["42-page world-building PDF","Science behind each story","Character & faction dossiers","Curated sci-fi reading list"],cta:"Download Free"},
+  {id:"ebook1",name:"FREQ Vol. 1: Signals",nameCN:"FREQ 第一卷：信号",desc:"The first 10 FREQ stories collected in a beautifully formatted ebook. Includes author notes on the science and a bilingual reading experience.",price:"RM 35",tier:"low",icon:"⚡",badge:"Bestseller",badgeClass:"badge-violet",popular:true,features:["10 complete stories (EN + CN)","Author's science notes","EPUB, MOBI & PDF formats","Lifetime updates"],cta:"Get the Ebook"},
+  {id:"signal",name:"The Signal — Premium",nameCN:"信号——高级版",desc:"Join 500+ readers getting exclusive chapters, behind-the-science breakdowns, and early access to every new story before it goes public.",price:"RM 25/mo",tier:"mid",icon:"📡",badge:"Most Popular",badgeClass:"badge-blue",popular:false,features:["Exclusive monthly story","Behind-the-science deep dives","Early access (1 week ahead)","Member-only Discord channel","Vote on next story topics"],cta:"Join The Signal"},
+  {id:"mini",name:"Write & Publish Sci-Fi Across 5 Platforms",nameCN:"跨5平台写作与发布科幻小说",desc:"My complete workflow for writing one story and publishing it across 5 platforms in both Chinese and English. Video course + templates.",price:"RM 199",tier:"mid",icon:"🎓",badge:"New",badgeClass:"badge-orange",popular:false,features:["6-module video course","Platform-specific templates","AI prompt library","Translation workflow guide","Lifetime access + updates"],cta:"Enroll Now"},
+  {id:"flagship",name:"The FREQ Method — Full Course",nameCN:"FREQ方法论——完整课程",desc:"Build a bilingual content brand from scratch. The complete system I use to run FREQ as a one-person business: writing, publishing, email list, digital products, and monetization.",price:"RM 750",tier:"high",icon:"🚀",badge:"Flagship",badgeClass:"badge-violet",popular:false,features:["12-module comprehensive course","Complete FREQ business playbook","Email list growth strategies","Monetization frameworks","1 group coaching call/month","Private community access"],cta:"Get Full Access"},
+];
+
+const bipPosts = [
+  {title:"Month 0: Why I'm Building FREQ in Public",excerpt:"Every creator I admire documents their journey. Starting today, so do I. Here's the full strategy — the platforms, the products, the income targets, and the timeline.",date:"2026-05-01",tags:["Strategy","OPC","Month 0"],subs:0,rev:"RM 0"},
+  {title:"How I Publish One Story Across 5 Platforms in 2 Languages",excerpt:"The exact workflow: write in English, translate with Claude, polish manually, format for 知乎 (long-form), cut for 抖音 (60s video), carousel for 小红书, repost for TikTok/IG.",date:"2026-05-08",tags:["Workflow","AI","Tools"],subs:47,rev:"RM 0"},
+  {title:"The Tools I Use to Run FREQ as a Side Project",excerpt:"Full stack: Claude for writing + translation, 剪映 for video, Canva for covers, ConvertKit for email, Gumroad for products. Total cost: RM 50/month.",date:"2026-05-15",tags:["Tools","Stack","Cost"],subs:134,rev:"RM 0"},
+  {title:"How AI Helps Me Write Sci-Fi (And Where It Fails)",excerpt:"AI is incredible for research, fact-checking, translation, and video narration. It completely fails at the thing that matters most: having lived something worth writing about.",date:"2026-05-22",tags:["AI","Writing","Honest Take"],subs:312,rev:"RM 35"},
+];
+
+const roadmap = [
+  {phase:1,label:"Foundation",months:"Month 1–3",status:"active",goal:"Earn Trust, Build List",revenue:"RM 0–100/mo",items:["Publish weekly stories on all 5 platforms","Set up website & email list","Create FREQ Universe Bible lead magnet","Target: 500 email subscribers"]},
+  {phase:2,label:"First Product",months:"Month 4–6",status:"upcoming",goal:"Validate & Sell",revenue:"RM 700–2,800/mo",items:["Launch ebook Vol. 1: Signals","Paid newsletter tier","Start building-in-public content","Target: 100 ebook sales"]},
+  {phase:3,label:"Scale Products",months:"Month 7–12",status:"upcoming",goal:"Stack & Compound",revenue:"RM 4,000–11,000/mo",items:["Launch mini-course","Second ebook collection","Grow email list aggressively","Target: 2,000 subscribers"]},
+  {phase:4,label:"Full OPC",months:"Year 2",status:"future",goal:"The Flywheel Spins",revenue:"RM 13,000–38,000/mo",items:["Membership community launch","Flagship course","5,000+ email list","Optional: quit day job"]},
+];
+
+// ======================== STATE ========================
+let currentLang = 'en';
+let currentTagFilter = null;
+let currentProductFilter = 'all';
+let statsAnimated = false;
+
+// ======================== NAVIGATION ========================
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if (page === 'home' && !statsAnimated) { setTimeout(animateStats, 400); statsAnimated = true; }
+  if (page === 'bip') { setTimeout(() => { const el = document.getElementById('bipProgress'); if(el) el.style.width='62%'; }, 300); }
+}
+
+function toggleMobile() {
+  document.getElementById('mobile-menu').classList.toggle('open');
+}
+
+// ======================== TOAST ========================
+function toast(msg) {
+  const c = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<span class="toast-icon">✅</span><span class="toast-msg">${msg}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ======================== STATS ========================
+function animateStats() {
+  animateCount('stat1', 4, 1200);
+  animateCount('stat2', 5, 1200);
+  animateCount('stat3', 312, 1500);
+  animateCount('stat4', 2, 800);
+  document.getElementById('stat3').textContent = '312+';
+}
+function animateCount(id, target, dur) {
+  const el = document.getElementById(id);
+  let start = null;
+  function step(ts) {
+    if (!start) start = ts;
+    const p = Math.min((ts - start) / dur, 1);
+    el.textContent = Math.floor(p * target) + (id === 'stat3' ? '+' : '');
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ======================== STORIES ========================
+function renderStories(list, containerId, clickable) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  c.innerHTML = list.map(s => `
+    <div class="story-card" onclick="${clickable ? `openStory('${s.id}')` : `showPage('stories')`}">
+      <div class="story-cover ${s.grad}">
+        <div style="position:absolute;inset:0;background:rgba(0,0,0,.2)"></div>
+        <div class="story-cover-tags">${s.tags.map(t=>`<span class="tag-badge">${t}</span>`).join('')}</div>
+        <div class="story-chapter">Ch.${s.chapter}</div>
+        ${s.featured ? '<div class="featured-badge">Featured</div>' : ''}
+      </div>
+      <div class="story-body">
+        <div class="story-title">${currentLang==='en'?s.title:s.titleCN}</div>
+        <div class="story-title-cn">${currentLang==='en'?s.titleCN:s.title}</div>
+        <div class="story-excerpt">${currentLang==='en'?s.excerpt:s.excerptCN}</div>
+        <div class="story-meta">
+          <span>⏱ ${s.readTime} · ${s.platform}</span>
+          <span>${s.publishedAt}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterStories() {
+  const q = (document.getElementById('storySearch')?.value || '').toLowerCase();
+  let list = stories.filter(s => {
+    const text = (currentLang==='en' ? s.title+s.excerpt : s.titleCN+s.excerptCN).toLowerCase();
+    const matchQ = !q || text.includes(q);
+    const matchTag = !currentTagFilter || s.tags.includes(currentTagFilter);
+    return matchQ && matchTag;
+  });
+  renderStories(list, 'storiesGrid', true);
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('langEN').classList.toggle('active', lang==='en');
+  document.getElementById('langCN').classList.toggle('active', lang==='cn');
+  filterStories();
+}
+
+function renderTagFilters() {
+  const tags = [...new Set(stories.flatMap(s=>s.tags))];
+  const c = document.getElementById('tagFilters');
+  if (!c) return;
+  c.innerHTML = `<button class="filter-btn active" onclick="setTagFilter(null,this)">🔍 All</button>` +
+    tags.map(t => `<button class="filter-btn" onclick="setTagFilter('${t}',this)">${t}</button>`).join('');
+}
+
+function setTagFilter(tag, btn) {
+  currentTagFilter = tag;
+  document.querySelectorAll('#tagFilters .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterStories();
+}
+
+// ======================== STORY READER ========================
+function openStory(id) {
+  const s = stories.find(s => s.id === id);
+  if (!s) return;
+  const content = storyContent[id];
+  const others = stories.filter(o => o.id !== id).slice(0,2);
+
+  function buildBody(lang) {
+    const paras = content ? content[lang] : ['This story is incoming. Subscribe to The Signal to get it first.'];
+    return paras.map(p => `<p>${p}</p>`).join('');
+  }
+
+  document.getElementById('readerContent').innerHTML = `
+    <div class="reader-cover ${s.grad}">
+      <div class="reader-cover-overlay"></div>
+      ${s.featured ? '<div style="position:absolute;top:16px;right:16px;padding:4px 10px;border-radius:6px;background:var(--violet);color:#fff;font-size:.75rem;font-weight:700">Featured</div>' : ''}
+    </div>
+    <div class="reader-tags">${s.tags.map(t=>`<span class="rtag">${t}</span>`).join('')}</div>
+    <div class="reader-head">
+      <h1 class="reader-title" id="readerTitle">${s.title}</h1>
+      <div class="lang-toggle">
+        <button class="lt-btn active" id="rLangEN" onclick="setReaderLang('en','${id}')">EN</button>
+        <button class="lt-btn" id="rLangCN" onclick="setReaderLang('cn','${id}')">中文</button>
+      </div>
+    </div>
+    <div class="reader-meta">
+      <span>⏱ ${s.readTime}</span>
+      <span>📅 ${s.publishedAt}</span>
+      <span>${s.platform}</span>
+    </div>
+    <div class="reader-body" id="readerBody">${buildBody('en')}</div>
+    <div class="reader-cta">
+      <h3>Enjoyed this transmission?</h3>
+      <p>Get the next chapter + the science behind the story delivered to your inbox every week. Free.</p>
+      <button class="btn-primary" onclick="showPage('newsletter')">Subscribe to The Signal →</button>
+    </div>
+    ${others.length ? `
+    <div class="more-stories">
+      <h3>More Transmissions</h3>
+      <div class="more-grid">
+        ${others.map(o => `
+          <div class="more-card" onclick="openStory('${o.id}')">
+            <div class="more-cover ${o.grad}"></div>
+            <div class="more-body">
+              <div class="more-title">${o.title}</div>
+              <div class="more-time">⏱ ${o.readTime}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>` : ''}
+  `;
+  window._readerStory = s;
+  window._readerContent = content;
+  showPage('reader');
+}
+
+function setReaderLang(lang, id) {
+  const s = window._readerStory;
+  const content = window._readerContent;
+  document.getElementById('rLangEN').classList.toggle('active', lang==='en');
+  document.getElementById('rLangCN').classList.toggle('active', lang==='cn');
+  document.getElementById('readerTitle').textContent = lang==='en' ? s.title : s.titleCN;
+  const paras = content ? content[lang] : ['This story is incoming.'];
+  document.getElementById('readerBody').innerHTML = paras.map(p=>`<p>${p}</p>`).join('');
+}
+
+// ======================== PRODUCTS ========================
+function renderProducts() {
+  const tiers = [{key:'all',label:'All Products'},{key:'free',label:'Free'},{key:'low',label:'Ebooks'},{key:'mid',label:'Membership & Courses'},{key:'high',label:'Premium'}];
+  const pf = document.getElementById('productFilters');
+  if (pf) pf.innerHTML = tiers.map(t => `<button class="filter-btn ${t.key===currentProductFilter?'active':''}" onclick="setProductFilter('${t.key}',this)">${t.label}</button>`).join('');
+
+  const list = currentProductFilter === 'all' ? products : products.filter(p => p.tier === currentProductFilter);
+  const pg = document.getElementById('productsGrid');
+  if (!pg) return;
+  pg.innerHTML = list.map(p => `
+    <div class="product-card ${p.popular?'popular':''}">
+      ${p.popular ? '<div class="popular-label">★ Most Popular</div>' : ''}
+      <div class="product-body">
+        <div class="product-header">
+          <div class="product-icon">${p.icon}</div>
+          <span class="prod-badge ${p.badgeClass}">${p.badge}</span>
+        </div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-name-cn">${p.nameCN}</div>
+        <div class="product-price">${p.price}</div>
+        <div class="product-desc">${p.desc}</div>
+        <ul class="product-features">${p.features.map(f=>`<li><span class="feature-check">✓</span>${f}</li>`).join('')}</ul>
+      </div>
+      <div class="product-footer">
+        <button class="btn-product ${p.popular?'btn-product-solid':'btn-product-ghost'}" onclick="toast('&quot;${p.name}&quot; — joining The Signal newsletter gets you notified first when this launches!')">${p.cta}</button>
+      </div>
+    </div>
+  `).join('');
+  // Also render home preview
+  const hp = document.getElementById('homeProducts');
+  if (hp) hp.innerHTML = `<div class="product-grid">${products.slice(0,3).map(p=>`
+    <div class="product-card" onclick="showPage('products')">
+      <div class="product-body">
+        <div style="font-size:2rem;margin-bottom:12px">${p.icon}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-price">${p.price}</div>
+        <div class="product-desc">${p.desc}</div>
+      </div>
+      <div class="product-footer">
+        <button class="btn-product btn-product-ghost" onclick="showPage('products')">Learn more →</button>
+      </div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function setProductFilter(key, btn) {
+  currentProductFilter = key;
+  document.querySelectorAll('#productFilters .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+
+// ======================== BUILD IN PUBLIC ========================
+function renderBIP() {
+  const c = document.getElementById('bipPosts');
+  if (c) c.innerHTML = bipPosts.map(p => `
+    <div class="bip-post" onclick="toast('&quot;${p.title.replace(/'/g,"\\'")} &quot; — Full post in The Signal newsletter!')">
+      <div class="bip-tags">${p.tags.map(t=>`<span class="tag-violet">${t}</span>`).join('')}<span style="font-size:.78rem;color:var(--muted)">${p.date}</span></div>
+      <div class="bip-title">${p.title}</div>
+      <div class="bip-excerpt">${p.excerpt}</div>
+      <div class="bip-meta-row">
+        <span style="color:var(--violet-light);font-size:.875rem;font-weight:600">Read full post →</span>
+        <div style="display:flex;gap:8px">
+          <span class="metric-chip" style="font-size:.78rem"><span>👥</span><span style="color:#fff;font-weight:700">${p.subs}</span></span>
+          <span class="metric-chip" style="font-size:.78rem"><span>💰</span><span style="color:#fff;font-weight:700">${p.rev}</span></span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  const rc = document.getElementById('roadmapPhases');
+  if (rc) rc.innerHTML = roadmap.map(p => `
+    <div class="roadmap-phase rp-${p.status}">
+      <div class="phase-header">
+        <div style="display:flex;align-items:flex-start">
+          <span class="phase-num">0${p.phase}</span>
+          <div>
+            <div class="phase-title">Phase ${p.phase}: ${p.label}</div>
+            <div class="phase-sub">${p.months}</div>
+            <div class="phase-goal">${p.goal}</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <span class="phase-revenue">${p.revenue}</span>
+          <span class="status-pill sp-${p.status}">${p.status==='active'?'In Progress':p.status==='upcoming'?'Up Next':'Future'}</span>
+        </div>
+      </div>
+      <ul class="phase-items">${p.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+    </div>
+  `).join('');
+}
+
+// ======================== NEWSLETTER ========================
+function nlSubscribe() {
+  const email = document.getElementById('nlEmail').value.trim();
+  const name = document.getElementById('nlName').value.trim();
+  if (!email) { toast('Please enter your email address.'); return; }
+  document.getElementById('nlFormBox').innerHTML = `
+    <div class="success-box">
+      <div style="font-size:2.5rem;margin-bottom:12px">✅</div>
+      <h2 style="color:#fff;margin-bottom:8px">You're in The Signal! 📡</h2>
+      <p style="color:var(--muted);font-size:.875rem;line-height:1.7">
+        Check your inbox — your welcome email with the <strong style="color:#fff">FREQ Universe Bible PDF</strong> is on its way${name?' '+name:''}. First issue drops next Sunday.
+      </p>
+    </div>
+  `;
+  toast(`Welcome${name?' '+name:''}! Check your inbox for the FREQ Universe Bible PDF.`);
+}
+
+function subscribeHero() {
+  const email = document.getElementById('heroCTAEmail').value.trim();
+  if (!email) return;
+  toast(`You're in! Check ${email} for your welcome email + free FREQ Universe Bible.`);
+  document.getElementById('heroCTAEmail').value = '';
+}
+
+// ======================== INIT ========================
+function init() {
+  // Render featured stories on home
+  renderStories(stories.filter(s=>s.featured), 'featuredStories', true);
+  // Render all stories
+  renderStories(stories, 'storiesGrid', true);
+  // Tag filters
+  renderTagFilters();
+  // Products
+  renderProducts();
+  // BIP
+  renderBIP();
+  // Trigger stats on first load
+  setTimeout(animateStats, 600);
+  statsAnimated = true;
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
