@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { CheckCircle2, Star } from "lucide-react";
 import type { products } from "@/data/content";
 
@@ -13,8 +14,24 @@ const badgeColors: Record<string, string> = {
   orange: "bg-orange-900/50 text-orange-300 border-orange-700/50",
 };
 
-export default function ProductCard({ product, onAction }: { product: Product; onAction: (name: string) => void }) {
+function ctaClassName(popular: boolean, hovered: boolean) {
+  return `w-full py-3 rounded-lg font-semibold text-sm transition-all text-center block ${
+    popular || hovered
+      ? "bg-violet-600 hover:bg-violet-500 text-white"
+      : "bg-[#1a1a26] hover:bg-violet-900/40 text-gray-300 border border-[#2a2a3a] hover:border-violet-700"
+  }`;
+}
+
+export default function ProductCard({
+  product,
+  onAction,
+}: {
+  product: Product;
+  onAction: (name: string) => void;
+}) {
   const [hovered, setHovered] = useState(false);
+  const isInternal = product.url?.startsWith("/");
+  const hasUrl = !!product.url;
 
   return (
     <div
@@ -71,16 +88,27 @@ export default function ProductCard({ product, onAction }: { product: Product; o
 
       {/* CTA */}
       <div className="p-6 pt-0">
-        <button
-          onClick={() => onAction(product.name)}
-          className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
-            product.popular || hovered
-              ? "bg-violet-600 hover:bg-violet-500 text-white"
-              : "bg-[#1a1a26] hover:bg-violet-900/40 text-gray-300 border border-[#2a2a3a] hover:border-violet-700"
-          }`}
-        >
-          {product.cta}
-        </button>
+        {hasUrl && isInternal ? (
+          <Link href={product.url!} className={ctaClassName(product.popular, hovered)}>
+            {product.cta}
+          </Link>
+        ) : hasUrl ? (
+          <a
+            href={product.url!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={ctaClassName(product.popular, hovered)}
+          >
+            {product.cta}
+          </a>
+        ) : (
+          <button
+            onClick={() => onAction(product.name)}
+            className={ctaClassName(product.popular, hovered)}
+          >
+            {product.cta} — Coming Soon
+          </button>
+        )}
       </div>
     </div>
   );

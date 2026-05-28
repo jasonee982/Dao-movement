@@ -120,6 +120,7 @@ export const products = [
       "Curated sci-fi reading list",
     ],
     cta: "Download Free",
+    url: "/newsletter",
     popular: false,
   },
   {
@@ -142,6 +143,8 @@ export const products = [
       "Lifetime updates",
     ],
     cta: "Get the Ebook",
+    // TODO: Replace with your Gumroad link after publishing — https://app.gumroad.com/products/new
+    url: "",
     popular: true,
   },
   {
@@ -165,6 +168,8 @@ export const products = [
       "Vote on next story topics",
     ],
     cta: "Join The Signal",
+    // TODO: Replace with your Gumroad membership link
+    url: "",
     popular: false,
   },
   {
@@ -188,6 +193,8 @@ export const products = [
       "Lifetime access + updates",
     ],
     cta: "Enroll Now",
+    // TODO: Replace with your Gumroad course link
+    url: "",
     popular: false,
   },
   {
@@ -212,6 +219,8 @@ export const products = [
       "Private community access",
     ],
     cta: "Get Full Access",
+    // TODO: Replace with your Gumroad flagship course link
+    url: "",
     popular: false,
   },
 ];
