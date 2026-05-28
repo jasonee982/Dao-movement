@@ -235,7 +235,7 @@ export default function Home() {
           </div>
           <h2 className="text-3xl font-bold text-white mb-3">Catch The Signal</h2>
           <p className="text-gray-400 leading-relaxed mb-8">
-            Join <strong className="text-violet-400">312+</strong> readers getting exclusive micro-stories,
+            Join <strong className="text-violet-400">489+</strong> readers getting exclusive micro-stories,
             behind-the-science breakdowns, and honest updates on building FREQ as a one-person business.
             Weekly. Free forever.
           </p>
