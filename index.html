@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timeline Builder — choose a template, theme it, export</title>
+<style id="appcss">
+/* ============================================================
+   APP CHROME
+   ============================================================ */
+:root{
+  --ui-bg:#0d1117; --ui-panel:#161b22; --ui-panel-2:#1c2230;
+  --ui-border:#2a323d; --ui-text:#e6edf3; --ui-muted:#8b949e;
+  --ui-accent:#5b8cff; --ui-accent-2:#a371f7;
+  --ui-radius:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  background:var(--ui-bg); color:var(--ui-text); -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit; color:inherit}
+
+/* ---- top bar ---- */
+.app-bar{
+  display:flex; align-items:center; gap:14px; padding:12px 18px;
+  background:linear-gradient(90deg,var(--ui-panel),var(--ui-panel-2));
+  border-bottom:1px solid var(--ui-border); position:sticky; top:0; z-index:20;
+}
+.app-bar .logo{font-weight:800; font-size:16px; letter-spacing:.2px; display:flex; align-items:center; gap:9px}
+.app-bar .logo .dot{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,var(--ui-accent),var(--ui-accent-2));display:grid;place-items:center;font-size:13px}
+.app-bar .spacer{flex:1}
+.app-bar .hint{color:var(--ui-muted); font-size:12px; margin-right:6px}
+.btn{
+  border:1px solid var(--ui-border); background:var(--ui-panel-2); color:var(--ui-text);
+  padding:8px 13px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;
+  display:inline-flex; align-items:center; gap:7px; transition:.15s;
+}
+.btn:hover{border-color:var(--ui-accent); transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,var(--ui-accent),var(--ui-accent-2)); border-color:transparent}
+.btn.ghost{background:transparent}
+
+/* ---- layout ---- */
+.app{display:grid; grid-template-columns:360px 1fr; height:calc(100vh - 57px)}
+.app-sidebar{
+  background:var(--ui-panel); border-right:1px solid var(--ui-border);
+  overflow-y:auto; padding:6px 0 40px;
+}
+.app-main{overflow:auto; padding:30px; background:
+  radial-gradient(1200px 600px at 30% -10%, rgba(91,140,255,.10), transparent 60%),
+  radial-gradient(900px 500px at 90% 10%, rgba(163,113,247,.10), transparent 55%),
+  var(--ui-bg);
+}
+
+/* ---- sidebar sections ---- */
+.section{border-bottom:1px solid var(--ui-border)}
+.section>summary{
+  list-style:none; cursor:pointer; padding:14px 18px; font-weight:700; font-size:13px;
+  letter-spacing:.3px; text-transform:uppercase; color:var(--ui-text);
+  display:flex; align-items:center; gap:9px; user-select:none;
+}
+.section>summary::-webkit-details-marker{display:none}
+.section>summary .chev{margin-left:auto; transition:.2s; color:var(--ui-muted)}
+.section[open]>summary .chev{transform:rotate(90deg)}
+.section .body{padding:4px 18px 18px}
+.section .num{font-size:11px; background:var(--ui-panel-2); border:1px solid var(--ui-border); color:var(--ui-muted); padding:1px 7px; border-radius:20px}
+
+label.fld{display:block; font-size:12px; color:var(--ui-muted); margin:12px 0 5px; font-weight:600}
+.input, textarea.input, select.input{
+  width:100%; background:var(--ui-bg); border:1px solid var(--ui-border); color:var(--ui-text);
+  padding:9px 11px; border-radius:8px; font-size:13px;
+}
+.input:focus,textarea.input:focus,select.input:focus{outline:none; border-color:var(--ui-accent)}
+textarea.input{resize:vertical; min-height:54px; line-height:1.45}
+
+/* ---- template gallery ---- */
+.gallery{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.tpl{
+  border:1.5px solid var(--ui-border); background:var(--ui-bg); border-radius:10px;
+  padding:9px; cursor:pointer; transition:.15s; text-align:center;
+}
+.tpl:hover{border-color:var(--ui-accent)}
+.tpl.active{border-color:var(--ui-accent); box-shadow:0 0 0 3px rgba(91,140,255,.18)}
+.tpl .thumb{height:54px; border-radius:6px; background:var(--ui-panel-2); margin-bottom:7px; position:relative; overflow:hidden}
+.tpl .name{font-size:11.5px; font-weight:600}
+/* mini thumb art */
+.thumb svg{position:absolute; inset:0; width:100%; height:100%}
+
+/* ---- theme swatches ---- */
+.swatches{display:grid; grid-template-columns:repeat(4,1fr); gap:9px}
+.sw{height:42px; border-radius:9px; cursor:pointer; position:relative; border:2px solid transparent; overflow:hidden}
+.sw.active{border-color:#fff; box-shadow:0 0 0 2px var(--ui-accent)}
+.sw .a{position:absolute; inset:0}
+.sw .b{position:absolute; right:0; top:0; bottom:0; width:42%}
+.sw .name{position:absolute; left:5px; bottom:3px; font-size:9px; font-weight:700; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.6)}
+
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
+.colorfld{display:flex; align-items:center; gap:8px; background:var(--ui-bg); border:1px solid var(--ui-border); border-radius:8px; padding:5px 8px}
+.colorfld input[type=color]{width:30px; height:26px; border:none; background:none; padding:0; cursor:pointer}
+.colorfld span{font-size:11px; color:var(--ui-muted)}
+.toggle{display:flex; align-items:center; justify-content:space-between; padding:9px 0}
+.toggle .t-label{font-size:13px}
+.switch{position:relative; width:42px; height:24px; background:var(--ui-border); border-radius:20px; cursor:pointer; transition:.2s; flex:none}
+.switch.on{background:var(--ui-accent)}
+.switch .knob{position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:.2s}
+.switch.on .knob{left:21px}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{border:1px solid var(--ui-border); background:var(--ui-bg); padding:6px 10px; border-radius:20px; font-size:12px; cursor:pointer}
+.chip.active{background:var(--ui-accent); border-color:transparent; color:#fff}
+input[type=range]{width:100%; accent-color:var(--ui-accent)}
+
+/* ---- events editor ---- */
+.ev{border:1px solid var(--ui-border); border-radius:10px; padding:10px; margin-bottom:10px; background:var(--ui-bg)}
+.ev .ev-top{display:flex; gap:7px; align-items:center; margin-bottom:7px}
+.ev .ev-top .input{flex:1}
+.ev .ev-ico{width:46px; text-align:center}
+.ev .ev-actions{display:flex; gap:4px; margin-left:auto}
+.iconbtn{border:1px solid var(--ui-border); background:var(--ui-panel-2); width:28px; height:28px; border-radius:7px; cursor:pointer; display:grid; place-items:center; font-size:13px}
+.iconbtn:hover{border-color:var(--ui-accent)}
+.iconbtn.danger:hover{border-color:#f85149; color:#f85149}
+.add-ev{width:100%; justify-content:center; margin-top:4px; border-style:dashed}
+
+/* ============================================================
+   PREVIEW STAGE
+   ============================================================ */
+.stage{display:flex; justify-content:center}
+#preview{
+  --radius:14px; --scale:1;
+  width:100%; max-width:1100px;
+  background:var(--bg); color:var(--text);
+  font-family:var(--font); font-size:calc(15px * var(--scale));
+  border-radius:18px; padding:46px 40px 54px; position:relative;
+  box-shadow:0 30px 80px rgba(0,0,0,.35); overflow:hidden;
+}
+.tl-head{text-align:center; margin-bottom:34px}
+.tl-head h1{margin:0; font-size:2em; font-weight:800; letter-spacing:-.5px; line-height:1.15}
+.tl-head p{margin:8px 0 0; color:var(--muted); font-size:1.02em}
+.tl-empty{text-align:center; color:var(--muted); padding:50px 0}
+
+.card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+  padding:.95em 1.05em; box-shadow:0 8px 24px rgba(0,0,0,.10)}
+.card.outline{background:transparent; box-shadow:none; border:1.6px solid var(--accent)}
+.card.glass{background:color-mix(in srgb,var(--surface) 62%, transparent); backdrop-filter:blur(7px); border-color:color-mix(in srgb,var(--text) 12%, transparent)}
+.card.minimal{background:transparent; border:none; box-shadow:none; padding:.2em .1em}
+.ev-date{font-size:.74em; font-weight:800; letter-spacing:.6px; text-transform:uppercase; color:var(--accent); margin-bottom:.3em}
+.card.minimal .ev-date{color:var(--accent)}
+.ev-title{font-size:1.06em; font-weight:750; margin:0 0 .25em; line-height:1.25}
+.ev-desc{font-size:.9em; color:var(--muted); line-height:1.5; margin:0}
+
+/* marker */
+.marker{
+  width:1.25em; height:1.25em; border-radius:50%; background:var(--node-bg);
+  box-shadow:0 0 0 .28em var(--ring); display:grid; place-items:center;
+  color:#fff; font-size:1em; font-weight:800; flex:none; position:relative; z-index:2;
+}
+.marker.ring{background:var(--surface); box-shadow:none; border:.2em solid var(--accent)}
+.marker.square{border-radius:.28em}
+.marker.diamond{border-radius:.18em; transform:rotate(45deg)}
+.marker.diamond>span{transform:rotate(-45deg); display:block}
+.marker.num,.marker.emoji{width:2.3em; height:2.3em; font-size:.85em; box-shadow:0 0 0 .25em var(--ring)}
+.marker.emoji{background:var(--surface); border:.14em solid var(--accent); box-shadow:0 6px 16px rgba(0,0,0,.18)}
+
+/* ---------- 1. HORIZONTAL ALTERNATING ---------- */
+.tl-halt{position:relative; padding:14px 6px; overflow-x:auto}
+.halt-line{position:absolute; left:24px; right:24px; top:50%; height:.2em; background:var(--line-bg); transform:translateY(-50%); border-radius:4px}
+.halt-track{display:flex; gap:26px; min-width:max-content; position:relative; padding:0 14px}
+.halt-item{position:relative; width:220px; min-height:330px; display:flex; align-items:center; justify-content:center}
+.halt-card{position:absolute; width:100%}
+.halt-item.above .halt-card{bottom:calc(50% + 2.6em)}
+.halt-item.below .halt-card{top:calc(50% + 2.6em)}
+.halt-stem{position:absolute; left:50%; width:.16em; background:var(--line-bg); transform:translateX(-50%); z-index:1}
+.halt-item.above .halt-stem{bottom:50%; height:2.6em}
+.halt-item.below .halt-stem{top:50%; height:2.6em}
+
+/* ---------- 2. HORIZONTAL STEPS (numbered) ---------- */
+.tl-steps{position:relative; display:flex; gap:20px; padding:30px 10px 10px; overflow-x:auto}
+.step-item{flex:1 1 0; min-width:170px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative}
+.step-line{position:absolute; left:10%; right:10%; top:calc(30px + 1.15em); height:.18em; background:var(--line-bg); z-index:0; border-radius:4px}
+.step-item .marker{margin-bottom:14px}
+.step-item .card{width:100%}
+
+/* ---------- 3. ROADMAP PILLS ---------- */
+.tl-road{position:relative; padding:40px 8px; overflow-x:auto}
+.road-line{position:absolute; left:30px; right:30px; top:50%; height:.5em; background:var(--line-bg); transform:translateY(-50%); border-radius:20px; opacity:.9}
+.road-track{display:flex; gap:14px; min-width:max-content; position:relative; padding:0 20px}
+.road-item{position:relative; width:200px; display:flex; flex-direction:column; align-items:center}
+.road-item .pill{background:var(--node-bg); color:#fff; font-weight:800; padding:.5em 1.1em; border-radius:30px; font-size:.95em; box-shadow:0 10px 24px rgba(0,0,0,.22); z-index:2; display:flex; align-items:center; gap:.5em; white-space:nowrap}
+.road-item .pill .n{background:rgba(255,255,255,.25); width:1.5em; height:1.5em; border-radius:50%; display:grid; place-items:center; font-size:.82em}
+.road-item.up{flex-direction:column-reverse}
+.road-item .road-info{text-align:center; padding:.6em .4em; max-width:200px}
+.road-item.up .road-info{margin-bottom:1.1em}
+.road-item.down .road-info{margin-top:1.1em}
+.road-item .road-stem{width:.16em; height:1.1em; background:var(--line-bg)}
+
+/* ---------- 4. VERTICAL ZIGZAG ---------- */
+.tl-zig{position:relative; max-width:840px; margin:0 auto; padding:10px 0}
+.zig-line{position:absolute; left:50%; top:0; bottom:0; width:.18em; background:var(--line-bg); transform:translateX(-50%)}
+.zig-item{position:relative; display:grid; grid-template-columns:1fr 2.6em 1fr; align-items:center; margin-bottom:26px}
+.zig-item .marker{justify-self:center}
+.zig-item .card{grid-column:1; margin-right:8px}
+.zig-item.right .card{grid-column:3; margin-right:0; margin-left:8px}
+@media (max-width:560px){
+  .tl-zig .zig-line{left:1.15em}
+  .zig-item{grid-template-columns:2.3em 1fr}
+  .zig-item .marker{grid-column:1}
+  .zig-item .card,.zig-item.right .card{grid-column:2; margin:0}
+}
+
+/* ---------- 5. VERTICAL LEFT RAIL ---------- */
+.tl-rail{position:relative; max-width:680px; margin:0 auto; padding-left:2.4em}
+.rail-line{position:absolute; left:.6em; top:.4em; bottom:.4em; width:.16em; background:var(--line-bg)}
+.rail-item{position:relative; margin-bottom:22px}
+.rail-item .marker{position:absolute; left:-2.4em; top:.15em; transform:translateX(.0)}
+.rail-item .marker.diamond{top:.35em}
+
+/* ---------- 6. VERTICAL TWO-COLUMN ---------- */
+.tl-two{position:relative; max-width:760px; margin:0 auto; padding:10px 0}
+.two-line{position:absolute; left:50%; top:0; bottom:0; width:.16em; background:var(--line-bg); transform:translateX(-50%)}
+.two-item{position:relative; display:grid; grid-template-columns:1fr 2.6em 1fr; align-items:start; margin-bottom:22px}
+.two-item .marker{justify-self:center; margin-top:.1em}
+.two-item .two-date{grid-column:1; text-align:right; padding-right:1em; padding-top:.2em}
+.two-item .two-date .d{font-weight:800; color:var(--accent); font-size:1.02em}
+.two-item .card{grid-column:3; margin-left:1em}
+
+footer.credit{margin-top:30px; text-align:center; color:var(--muted); font-size:.72em; letter-spacing:.4px}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@media print{
+  .app-bar,.app-sidebar{display:none!important}
+  .app{display:block; height:auto}
+  .app-main{padding:0; background:#fff}
+  #preview{box-shadow:none; max-width:none; border-radius:0}
+  @page{margin:14mm}
+}
+</style>
+</head>
+<body>
+
+<div class="app-bar">
+  <div class="logo"><span class="dot">⏱</span> Timeline Builder</div>
+  <span class="hint">Choose a template · pick a theme · export</span>
+  <div class="spacer"></div>
+  <button class="btn ghost" id="btnSample">↺ Sample</button>
+  <button class="btn ghost" id="btnImport">⤓ Import</button>
+  <button class="btn ghost" id="btnExportJSON">⤒ Save .json</button>
+  <button class="btn" id="btnXLSX">📊 Excel</button>
+  <button class="btn" id="btnPNG">🖼 PNG</button>
+  <button class="btn primary" id="btnPDF">🖨 PDF</button>
+  <input type="file" id="fileInput" accept="application/json" hidden>
+</div>
+
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="app-sidebar">
+
+    <details class="section" open>
+      <summary>① Content <span class="chev">▸</span></summary>
+      <div class="body">
+        <label class="fld">Timeline title</label>
+        <input class="input" id="metaTitle" placeholder="e.g. Product Roadmap">
+        <label class="fld">Subtitle</label>
+        <input class="input" id="metaSub" placeholder="e.g. 2024 – 2025 Plan">
+      </div>
+    </details>
+
+    <details class="section" open>
+      <summary>② Template <span class="num" id="tplCount"></span><span class="chev">▸</span></summary>
+      <div class="body">
+        <div class="gallery" id="gallery"></div>
+      </div>
+    </details>
+
+    <details class="section" open>
+      <summary>③ Theme <span class="chev">▸</span></summary>
+      <div class="body">
+        <div class="swatches" id="swatches"></div>
+
+        <div class="toggle">
+          <span class="t-label">🌙 Dark canvas</span>
+          <div class="switch" id="swDark"><div class="knob"></div></div>
+        </div>
+        <div class="toggle">
+          <span class="t-label">🎨 Gradient accent</span>
+          <div class="switch" id="swGrad"><div class="knob"></div></div>
+        </div>
+
+        <label class="fld">Custom colours</label>
+        <div class="row3">
+          <div class="colorfld"><input type="color" id="cAccent"><span>Accent</span></div>
+          <div class="colorfld"><input type="color" id="cAccent2"><span>Accent 2</span></div>
+          <div class="colorfld"><input type="color" id="cBg"><span>Back</span></div>
+        </div>
+        <div class="row2" style="margin-top:8px">
+          <div class="colorfld"><input type="color" id="cSurface"><span>Card</span></div>
+          <div class="colorfld"><input type="color" id="cText"><span>Text</span></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="section">
+      <summary>④ Style <span class="chev">▸</span></summary>
+      <div class="body">
+        <label class="fld">Font</label>
+        <select class="input" id="selFont">
+          <option value="sans">Modern Sans</option>
+          <option value="serif">Elegant Serif</option>
+          <option value="rounded">Friendly Rounded</option>
+          <option value="display">Bold Display</option>
+          <option value="mono">Technical Mono</option>
+        </select>
+
+        <label class="fld">Marker shape</label>
+        <div class="chips" id="markerChips">
+          <span class="chip" data-v="dot">● Dot</span>
+          <span class="chip" data-v="ring">◯ Ring</span>
+          <span class="chip" data-v="square">■ Square</span>
+          <span class="chip" data-v="diamond">◆ Diamond</span>
+          <span class="chip" data-v="num"># Number</span>
+        </div>
+
+        <label class="fld">Card style</label>
+        <div class="chips" id="cardChips">
+          <span class="chip" data-v="filled">Filled</span>
+          <span class="chip" data-v="outline">Outline</span>
+          <span class="chip" data-v="glass">Glass</span>
+          <span class="chip" data-v="minimal">Minimal</span>
+        </div>
+
+        <label class="fld">Size <span id="sizeVal" style="color:var(--ui-muted)"></span></label>
+        <input type="range" id="rngSize" min="0.8" max="1.3" step="0.05">
+      </div>
+    </details>
+
+    <details class="section" open>
+      <summary>⑤ Events <span class="num" id="evCount"></span><span class="chev">▸</span></summary>
+      <div class="body">
+        <div id="evList"></div>
+        <button class="btn add-ev" id="btnAddEv">＋ Add event</button>
+      </div>
+    </details>
+
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="app-main">
+    <div class="stage">
+      <div id="preview"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+const TEMPLATES = [
+  {id:'h-alt',   name:'H · Alternating'},
+  {id:'h-steps', name:'H · Steps'},
+  {id:'road',    name:'H · Roadmap'},
+  {id:'v-zig',   name:'V · Zigzag'},
+  {id:'v-rail',  name:'V · Left Rail'},
+  {id:'v-two',   name:'V · Two-Column'},
+];
+
+const THEMES = {
+  midnight:{name:'Midnight', accent:'#6366f1', accent2:'#a855f7', bg:'#0f172a', surface:'#1e293b', text:'#e2e8f0', dark:true},
+  ocean:   {name:'Ocean',    accent:'#0ea5e9', accent2:'#06b6d4', bg:'#f0f9ff', surface:'#ffffff', text:'#0c4a6e', dark:false},
+  sunset:  {name:'Sunset',   accent:'#f97316', accent2:'#ef4444', bg:'#fff7ed', surface:'#ffffff', text:'#7c2d12', dark:false},
+  forest:  {name:'Forest',   accent:'#16a34a', accent2:'#84cc16', bg:'#f0fdf4', surface:'#ffffff', text:'#14532d', dark:false},
+  grape:   {name:'Grape',    accent:'#9333ea', accent2:'#db2777', bg:'#faf5ff', surface:'#ffffff', text:'#581c87', dark:false},
+  mono:    {name:'Mono',     accent:'#111827', accent2:'#6b7280', bg:'#ffffff', surface:'#f9fafb', text:'#111827', dark:false},
+  corp:    {name:'Corporate',accent:'#2563eb', accent2:'#1e40af', bg:'#f8fafc', surface:'#ffffff', text:'#1e293b', dark:false},
+  coral:   {name:'Coral',    accent:'#f43f5e', accent2:'#fb7185', bg:'#fff1f2', surface:'#ffffff', text:'#881337', dark:false},
+  slate:   {name:'Carbon',   accent:'#38bdf8', accent2:'#818cf8', bg:'#020617', surface:'#0f172a', text:'#e2e8f0', dark:true},
+  neon:    {name:'Neon',     accent:'#22d3ee', accent2:'#a3e635', bg:'#0a0a0a', surface:'#171717', text:'#f5f5f5', dark:true},
+  gold:    {name:'Gold',     accent:'#eab308', accent2:'#b45309', bg:'#1c1917', surface:'#292524', text:'#f5f5f4', dark:true},
+  rose:    {name:'Rosé',     accent:'#e11d48', accent2:'#9f1239', bg:'#fffafa', surface:'#ffffff', text:'#1f2937', dark:false},
+};
+
+const FONTS = {
+  sans:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif",
+  serif:"Georgia,'Iowan Old Style','Times New Roman',serif",
+  rounded:"'Avenir Next','Segoe UI',system-ui,'Helvetica Neue',sans-serif",
+  display:"'Trebuchet MS','Gill Sans',Verdana,system-ui,sans-serif",
+  mono:"'SF Mono',ui-monospace,Menlo,Consolas,'Courier New',monospace",
+};
+
+const SAMPLE = {
+  title:'Product Roadmap', subtitle:'From idea to launch · 2024 – 2025',
+  layout:'h-alt', theme:'midnight', dark:true, gradient:true,
+  accent:'#6366f1', accent2:'#a855f7', bg:'#0f172a', surface:'#1e293b', text:'#e2e8f0',
+  font:'sans', marker:'dot', card:'filled', size:1,
+  events:[
+    {date:'2024 · Q1', title:'Project Kickoff',  desc:'Define the scope, assemble the team, and align everyone on the goals.', icon:'🚀'},
+    {date:'2024 · Q2', title:'Research & Design', desc:'User interviews, wireframes, and the very first clickable prototype.', icon:'🔍'},
+    {date:'2024 · Q3', title:'Build',            desc:'Core development sprints with continuous internal testing.', icon:'🛠️'},
+    {date:'2024 · Q4', title:'Beta Launch',      desc:'Release to early users and gather structured feedback.', icon:'🧪'},
+    {date:'2025 · Q1', title:'Public Launch',    desc:'Go live, marketing push, and a smooth onboarding flow.', icon:'🎉'},
+  ]
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let state = load() || structuredClone(SAMPLE);
+
+function load(){ try{ return JSON.parse(localStorage.getItem('timelineBuilder')); }catch(e){ return null; } }
+function save(){ localStorage.setItem('timelineBuilder', JSON.stringify(state)); }
+const uid = () => Math.random().toString(36).slice(2,9);
+const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ============================================================
+   PREVIEW RENDERING
+   ============================================================ */
+const preview = document.getElementById('preview');
+
+function applyTheme(){
+  const grad = state.gradient;
+  const nodeBg = grad ? `linear-gradient(135deg,${state.accent},${state.accent2})` : state.accent;
+  const lineBg = grad ? `linear-gradient(90deg,${state.accent},${state.accent2})` : state.accent;
+  preview.setAttribute('style',
+    `--accent:${state.accent}; --accent2:${state.accent2}; --bg:${state.bg};`+
+    `--surface:${state.surface}; --text:${state.text};`+
+    `--muted:color-mix(in srgb,${state.text} 58%, transparent);`+
+    `--border:color-mix(in srgb,${state.text} 13%, transparent);`+
+    `--ring:color-mix(in srgb,${state.accent} 22%, transparent);`+
+    `--node-bg:${nodeBg}; --line-bg:${lineBg};`+
+    `--font:${FONTS[state.font]||FONTS.sans}; --scale:${state.size};`
+  );
+}
+
+function marker(i, ev){
+  const m = state.marker;
+  if(ev.icon) return `<div class="marker emoji"><span>${esc(ev.icon)}</span></div>`;
+  if(m==='num') return `<div class="marker num"><span>${i+1}</span></div>`;
+  if(m==='diamond') return `<div class="marker diamond"><span></span></div>`;
+  return `<div class="marker ${m==='dot'?'':m}"></div>`;
+}
+const cardCls = () => 'card '+(state.card==='filled'?'':state.card);
+
+function cardInner(ev){
+  return `${ev.date?`<div class="ev-date">${esc(ev.date)}</div>`:''}
+    <h3 class="ev-title">${esc(ev.title||'Untitled')}</h3>
+    ${ev.desc?`<p class="ev-desc">${esc(ev.desc)}</p>`:''}`;
+}
+
+const LAYOUTS = {
+  'h-alt'(ev){
+    const items = ev.map((e,i)=>`
+      <div class="halt-item ${i%2?'below':'above'}">
+        <div class="halt-card ${cardCls()}">${cardInner(e)}</div>
+        <div class="halt-stem"></div>
+        ${marker(i,e)}
+      </div>`).join('');
+    return `<div class="tl-halt"><div class="halt-line"></div><div class="halt-track">${items}</div></div>`;
+  },
+  'h-steps'(ev){
+    const items = ev.map((e,i)=>`
+      <div class="step-item">${marker(i,e)}<div class="${cardCls()}">${cardInner(e)}</div></div>`).join('');
+    return `<div class="tl-steps"><div class="step-line"></div>${items}</div>`;
+  },
+  'road'(ev){
+    const items = ev.map((e,i)=>`
+      <div class="road-item ${i%2?'down':'up'}">
+        <div class="pill"><span class="n">${i+1}</span>${esc(e.title||'Untitled')}</div>
+        <div class="road-stem"></div>
+        <div class="road-info">
+          ${e.date?`<div class="ev-date">${esc(e.date)}</div>`:''}
+          ${e.desc?`<p class="ev-desc">${esc(e.desc)}</p>`:''}
+        </div>
+      </div>`).join('');
+    return `<div class="tl-road"><div class="road-line"></div><div class="road-track">${items}</div></div>`;
+  },
+  'v-zig'(ev){
+    const items = ev.map((e,i)=>`
+      <div class="zig-item ${i%2?'right':'left'}">
+        <div class="${cardCls()}">${cardInner(e)}</div>${marker(i,e)}
+      </div>`).join('');
+    return `<div class="tl-zig"><div class="zig-line"></div>${items}</div>`;
+  },
+  'v-rail'(ev){
+    const items = ev.map((e,i)=>`
+      <div class="rail-item">${marker(i,e)}<div class="${cardCls()}">${cardInner(e)}</div></div>`).join('');
+    return `<div class="tl-rail"><div class="rail-line"></div>${items}</div>`;
+  },
+  'v-two'(ev){
+    const items = ev.map((e,i)=>`
+      <div class="two-item">
+        <div class="two-date"><div class="d">${esc(e.date||'')}</div></div>
+        ${marker(i,e)}
+        <div class="${cardCls()}">
+          <h3 class="ev-title">${esc(e.title||'Untitled')}</h3>
+          ${e.desc?`<p class="ev-desc">${esc(e.desc)}</p>`:''}
+        </div>
+      </div>`).join('');
+    return `<div class="tl-two"><div class="two-line"></div>${items}</div>`;
+  },
+};
+
+function renderPreview(){
+  applyTheme();
+  const head = (state.title||state.subtitle)
+    ? `<div class="tl-head">${state.title?`<h1>${esc(state.title)}</h1>`:''}${state.subtitle?`<p>${esc(state.subtitle)}</p>`:''}</div>` : '';
+  const body = state.events.length
+    ? (LAYOUTS[state.layout]||LAYOUTS['h-alt'])(state.events)
+    : `<div class="tl-empty">No events yet — add one from the panel on the left.</div>`;
+  preview.innerHTML = head + body + `<footer class="credit">Made with Timeline Builder</footer>`;
+  save();
+}
+
+/* ============================================================
+   SIDEBAR — wiring
+   ============================================================ */
+// template gallery thumbnails (mini SVG art per layout)
+const THUMBS = {
+  'h-alt':`<svg viewBox="0 0 100 54"><line x1="6" y1="27" x2="94" y2="27" stroke="#5b8cff" stroke-width="2"/><rect x="14" y="8" width="20" height="12" rx="2" fill="#3a4252"/><rect x="44" y="34" width="20" height="12" rx="2" fill="#3a4252"/><rect x="70" y="8" width="20" height="12" rx="2" fill="#3a4252"/><circle cx="24" cy="27" r="3" fill="#a371f7"/><circle cx="54" cy="27" r="3" fill="#a371f7"/><circle cx="80" cy="27" r="3" fill="#a371f7"/></svg>`,
+  'h-steps':`<svg viewBox="0 0 100 54"><line x1="14" y1="16" x2="86" y2="16" stroke="#5b8cff" stroke-width="2"/><circle cx="20" cy="16" r="5" fill="#a371f7"/><circle cx="50" cy="16" r="5" fill="#a371f7"/><circle cx="80" cy="16" r="5" fill="#a371f7"/><rect x="10" y="28" width="20" height="16" rx="2" fill="#3a4252"/><rect x="40" y="28" width="20" height="16" rx="2" fill="#3a4252"/><rect x="70" y="28" width="20" height="16" rx="2" fill="#3a4252"/></svg>`,
+  'road':`<svg viewBox="0 0 100 54"><line x1="8" y1="27" x2="92" y2="27" stroke="#5b8cff" stroke-width="4" stroke-linecap="round"/><rect x="12" y="12" width="26" height="11" rx="6" fill="#a371f7"/><rect x="60" y="31" width="26" height="11" rx="6" fill="#a371f7"/></svg>`,
+  'v-zig':`<svg viewBox="0 0 100 54"><line x1="50" y1="6" x2="50" y2="48" stroke="#5b8cff" stroke-width="2"/><rect x="14" y="10" width="24" height="12" rx="2" fill="#3a4252"/><rect x="62" y="30" width="24" height="12" rx="2" fill="#3a4252"/><circle cx="50" cy="16" r="3" fill="#a371f7"/><circle cx="50" cy="36" r="3" fill="#a371f7"/></svg>`,
+  'v-rail':`<svg viewBox="0 0 100 54"><line x1="18" y1="6" x2="18" y2="48" stroke="#5b8cff" stroke-width="2"/><circle cx="18" cy="14" r="3" fill="#a371f7"/><circle cx="18" cy="30" r="3" fill="#a371f7"/><circle cx="18" cy="46" r="3" fill="#a371f7"/><rect x="28" y="9" width="56" height="9" rx="2" fill="#3a4252"/><rect x="28" y="25" width="56" height="9" rx="2" fill="#3a4252"/><rect x="28" y="41" width="56" height="9" rx="2" fill="#3a4252"/></svg>`,
+  'v-two':`<svg viewBox="0 0 100 54"><line x1="50" y1="6" x2="50" y2="48" stroke="#5b8cff" stroke-width="2"/><rect x="10" y="12" width="28" height="8" rx="2" fill="#3a4252"/><rect x="62" y="12" width="28" height="8" rx="2" fill="#3a4252"/><rect x="10" y="34" width="28" height="8" rx="2" fill="#3a4252"/><rect x="62" y="34" width="28" height="8" rx="2" fill="#3a4252"/><circle cx="50" cy="16" r="3" fill="#a371f7"/><circle cx="50" cy="38" r="3" fill="#a371f7"/></svg>`,
+};
+function buildGallery(){
+  const g = document.getElementById('gallery');
+  g.innerHTML = TEMPLATES.map(t=>`
+    <div class="tpl ${state.layout===t.id?'active':''}" data-id="${t.id}">
+      <div class="thumb">${THUMBS[t.id]||''}</div>
+      <div class="name">${t.name}</div>
+    </div>`).join('');
+  g.querySelectorAll('.tpl').forEach(el=>el.onclick=()=>{
+    state.layout = el.dataset.id; buildGallery(); renderPreview();
+  });
+  document.getElementById('tplCount').textContent = TEMPLATES.length+' layouts';
+}
+
+function buildSwatches(){
+  const s = document.getElementById('swatches');
+  s.innerHTML = Object.entries(THEMES).map(([id,t])=>`
+    <div class="sw ${state.theme===id?'active':''}" data-id="${id}" title="${t.name}">
+      <div class="a" style="background:${t.bg}"></div>
+      <div class="b" style="background:linear-gradient(135deg,${t.accent},${t.accent2})"></div>
+      <div class="name">${t.name}</div>
+    </div>`).join('');
+  s.querySelectorAll('.sw').forEach(el=>el.onclick=()=>{
+    const t = THEMES[el.dataset.id];
+    Object.assign(state,{theme:el.dataset.id, accent:t.accent, accent2:t.accent2, bg:t.bg, surface:t.surface, text:t.text, dark:t.dark});
+    syncControls(); renderPreview();
+  });
+}
+
+function setSwitch(el,on){ el.classList.toggle('on',!!on); }
+
+function buildEvents(){
+  const list = document.getElementById('evList');
+  list.innerHTML = state.events.map((e,i)=>`
+    <div class="ev" data-i="${i}">
+      <div class="ev-top">
+        <input class="input ev-ico" data-f="icon" value="${esc(e.icon||'')}" placeholder="🙂" maxlength="4" title="Optional emoji icon">
+        <input class="input" data-f="date" value="${esc(e.date||'')}" placeholder="Date / label">
+        <div class="ev-actions">
+          <button class="iconbtn" data-act="up" ${i===0?'disabled style=opacity:.3':''}>↑</button>
+          <button class="iconbtn" data-act="down" ${i===state.events.length-1?'disabled style=opacity:.3':''}>↓</button>
+          <button class="iconbtn danger" data-act="del">🗑</button>
+        </div>
+      </div>
+      <input class="input" data-f="title" value="${esc(e.title||'')}" placeholder="Title" style="margin-bottom:7px">
+      <textarea class="input" data-f="desc" placeholder="Description">${esc(e.desc||'')}</textarea>
+    </div>`).join('');
+
+  list.querySelectorAll('.ev').forEach(row=>{
+    const i = +row.dataset.i;
+    row.querySelectorAll('[data-f]').forEach(inp=>{
+      inp.oninput = ()=>{ state.events[i][inp.dataset.f] = inp.value; renderPreview(); };
+    });
+    row.querySelectorAll('[data-act]').forEach(b=>{
+      b.onclick = ()=>{
+        const a = b.dataset.act;
+        if(a==='del') state.events.splice(i,1);
+        if(a==='up' && i>0) [state.events[i-1],state.events[i]]=[state.events[i],state.events[i-1]];
+        if(a==='down' && i<state.events.length-1) [state.events[i+1],state.events[i]]=[state.events[i],state.events[i+1]];
+        buildEvents(); renderPreview();
+      };
+    });
+  });
+  document.getElementById('evCount').textContent = state.events.length+' items';
+}
+
+/* sync all controls from state */
+function syncControls(){
+  document.getElementById('metaTitle').value = state.title||'';
+  document.getElementById('metaSub').value = state.subtitle||'';
+  document.getElementById('cAccent').value  = state.accent;
+  document.getElementById('cAccent2').value = state.accent2;
+  document.getElementById('cBg').value      = state.bg;
+  document.getElementById('cSurface').value = state.surface;
+  document.getElementById('cText').value    = state.text;
+  document.getElementById('selFont').value  = state.font;
+  document.getElementById('rngSize').value  = state.size;
+  document.getElementById('sizeVal').textContent = Math.round(state.size*100)+'%';
+  setSwitch(document.getElementById('swDark'), state.dark);
+  setSwitch(document.getElementById('swGrad'), state.gradient);
+  document.querySelectorAll('#markerChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.v===state.marker));
+  document.querySelectorAll('#cardChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.v===state.card));
+  buildSwatches();
+}
+
+/* control bindings */
+function bind(){
+  document.getElementById('metaTitle').oninput = e=>{ state.title=e.target.value; renderPreview(); };
+  document.getElementById('metaSub').oninput   = e=>{ state.subtitle=e.target.value; renderPreview(); };
+
+  const cl = (id,key)=>document.getElementById(id).oninput = e=>{ state[key]=e.target.value; state.theme='custom'; buildSwatches(); renderPreview(); };
+  cl('cAccent','accent'); cl('cAccent2','accent2'); cl('cBg','bg'); cl('cSurface','surface'); cl('cText','text');
+
+  document.getElementById('selFont').onchange = e=>{ state.font=e.target.value; renderPreview(); };
+  document.getElementById('rngSize').oninput = e=>{ state.size=+e.target.value; document.getElementById('sizeVal').textContent=Math.round(state.size*100)+'%'; renderPreview(); };
+
+  document.getElementById('swDark').onclick = function(){
+    state.dark=!state.dark; setSwitch(this,state.dark);
+    // quick auto bg/text/surface flip for convenience
+    if(state.dark){ state.bg='#0f172a'; state.surface='#1e293b'; state.text='#e2e8f0'; }
+    else { state.bg='#f8fafc'; state.surface='#ffffff'; state.text='#1e293b'; }
+    state.theme='custom'; syncControls(); renderPreview();
+  };
+  document.getElementById('swGrad').onclick = function(){ state.gradient=!state.gradient; setSwitch(this,state.gradient); renderPreview(); };
+
+  document.querySelectorAll('#markerChips .chip').forEach(c=>c.onclick=()=>{ state.marker=c.dataset.v; syncControls(); renderPreview(); });
+  document.querySelectorAll('#cardChips .chip').forEach(c=>c.onclick=()=>{ state.card=c.dataset.v; syncControls(); renderPreview(); });
+
+  document.getElementById('btnAddEv').onclick = ()=>{
+    state.events.push({date:'', title:'New event', desc:'', icon:''});
+    buildEvents(); renderPreview();
+  };
+
+  document.getElementById('btnSample').onclick = ()=>{
+    if(confirm('Replace the current timeline with the sample?')){ state=structuredClone(SAMPLE); initAll(); }
+  };
+  document.getElementById('btnExportJSON').onclick = ()=>{
+    downloadBlob(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}), (state.title||'timeline')+'.json');
+  };
+  document.getElementById('btnImport').onclick = ()=>document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{ try{ state=JSON.parse(r.result); initAll(); }catch(err){ alert('Could not read that file.'); } };
+    r.readAsText(f); e.target.value='';
+  };
+  document.getElementById('btnPDF').onclick = ()=>window.print();
+  document.getElementById('btnPNG').onclick = exportPNG;
+  document.getElementById('btnXLSX').onclick = exportXLSX;
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function downloadBlob(blob, name){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+
+/* ---- Excel (.xlsx) — built from scratch, no libraries ---- */
+function crc32(bytes){
+  let crc = 0xFFFFFFFF;
+  for(let i=0;i<bytes.length;i++){
+    let c = (crc ^ bytes[i]) & 0xFF;
+    for(let k=0;k<8;k++) c = c & 1 ? (0xEDB88320 ^ (c>>>1)) : (c>>>1);
+    crc = (crc>>>8) ^ c;
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+function zip(files){
+  const u16=v=>[v&255,(v>>8)&255];
+  const u32=v=>[v&255,(v>>8)&255,(v>>16)&255,(v>>24)&255];
+  const parts=[], central=[]; let offset=0;
+  for(const f of files){
+    const crc=crc32(f.data), n=f.data.length;
+    const local=[].concat(u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(0),
+      u32(crc),u32(n),u32(n),u16(f.name.length),u16(0));
+    parts.push(new Uint8Array(local), f.name, f.data);
+    central.push({name:f.name,crc,n,offset});
+    offset += local.length + f.name.length + n;
+  }
+  let cd=[];
+  for(const c of central){
+    const h=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),
+      u32(c.crc),u32(c.n),u32(c.n),u16(c.name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(c.offset));
+    cd.push(new Uint8Array(h), c.name);
+  }
+  const cdSize = cd.reduce((s,a)=>s+a.length,0);
+  const end=[].concat(u32(0x06054b50),u16(0),u16(0),u16(central.length),u16(central.length),
+    u32(cdSize),u32(offset),u16(0));
+  return new Blob([...parts,...cd,new Uint8Array(end)],
+    {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+async function exportXLSX(){
+  const enc = new TextEncoder();
+  const xe = s => (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const colRef = n => { let s=''; n++; while(n){ n--; s=String.fromCharCode(65+n%26)+s; n=Math.floor(n/26); } return s; };
+  const cS = (c,r,t) => `<c r="${colRef(c)}${r}" t="inlineStr"><is><t xml:space="preserve">${xe(t)}</t></is></c>`;
+  const cN = (c,r,v) => `<c r="${colRef(c)}${r}"><v>${v}</v></c>`;
+
+  const rows=[]; let r=1;
+  rows.push(`<row r="${r}">${cS(0,r,state.title||'Timeline')}</row>`); r++;
+  if(state.subtitle){ rows.push(`<row r="${r}">${cS(0,r,state.subtitle)}</row>`); r++; }
+  r++; // spacer row
+  const heads=['#','Date','Title','Description','Icon'];
+  rows.push(`<row r="${r}">${heads.map((h,i)=>cS(i,r,h)).join('')}</row>`); r++;
+  state.events.forEach((e,i)=>{
+    rows.push(`<row r="${r}">${cN(0,r,i+1)}${cS(1,r,e.date)}${cS(2,r,e.title)}${cS(3,r,e.desc)}${cS(4,r,e.icon)}</row>`); r++;
+  });
+
+  // Try to rasterise the styled timeline so we can embed it as a picture in the sheet.
+  let img = null, imgErr = null;
+  try{
+    const {cv,w,h} = await timelineToCanvas();
+    img = { bytes: await canvasToBytes(cv), w, h };
+  }catch(e){ imgErr = e; /* browser blocked canvas export — fall back to data-only */ }
+
+  const sheet =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" `+
+    `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`+
+    `<cols><col min="1" max="1" width="5"/><col min="2" max="2" width="16"/>`+
+    `<col min="3" max="3" width="28"/><col min="4" max="4" width="55"/><col min="5" max="5" width="8"/></cols>`+
+    `<sheetData>${rows.join('')}</sheetData>`+
+    (img?`<drawing r:id="rId1"/>`:``)+
+    `</worksheet>`;
+  const ct =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">`+
+    `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>`+
+    `<Default Extension="xml" ContentType="application/xml"/>`+
+    (img?`<Default Extension="png" ContentType="image/png"/>`:``)+
+    `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>`+
+    `<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`+
+    (img?`<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>`:``)+
+    `</Types>`;
+  const rels =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  const wb =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`+
+    `<sheets><sheet name="Timeline" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+  const wbRels =
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+    `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`;
+
+  const files=[
+    {name:'[Content_Types].xml', data:enc.encode(ct)},
+    {name:'_rels/.rels',         data:enc.encode(rels)},
+    {name:'xl/workbook.xml',     data:enc.encode(wb)},
+    {name:'xl/_rels/workbook.xml.rels', data:enc.encode(wbRels)},
+    {name:'xl/worksheets/sheet1.xml',   data:enc.encode(sheet)},
+  ];
+
+  if(img){
+    const EMU=9525, cx=Math.round(img.w*EMU), cy=Math.round(img.h*EMU);
+    const drawing =
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" `+
+      `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" `+
+      `xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`+
+      `<xdr:oneCellAnchor>`+
+      `<xdr:from><xdr:col>6</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>`+
+      `<xdr:ext cx="${cx}" cy="${cy}"/>`+
+      `<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="Timeline"/><xdr:cNvPicPr/></xdr:nvPicPr>`+
+      `<xdr:blipFill><a:blip r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>`+
+      `<xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>`+
+      `<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic>`+
+      `<xdr:clientData/></xdr:oneCellAnchor></xdr:wsDr>`;
+    const drawRels =
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image1.png"/></Relationships>`;
+    const sheetRels =
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`+
+      `<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">`+
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>`;
+    files.push(
+      {name:'xl/worksheets/_rels/sheet1.xml.rels', data:enc.encode(sheetRels)},
+      {name:'xl/drawings/drawing1.xml',            data:enc.encode(drawing)},
+      {name:'xl/drawings/_rels/drawing1.xml.rels', data:enc.encode(drawRels)},
+      {name:'xl/media/image1.png',                 data:img.bytes},
+    );
+  }
+
+  downloadBlob(zip(files), (state.title||'timeline')+'.xlsx');
+  if(imgErr){
+    alert('Saved the workbook with the DATA TABLE, but I could not embed the timeline picture.\n\n'+
+      'Your browser blocked converting the design to an image (Safari does this by default).\n\n'+
+      'Fix: open this same file in Google Chrome or Microsoft Edge, then click Excel again — the picture will be embedded.\n\n'+
+      'Also open the .xlsx in Microsoft Excel (not Apple Numbers / Quick Look), as Numbers can drop embedded images.');
+  }
+}
+
+/* Build the timeline as a NATIVE SVG (pure shapes + text — no foreignObject),
+   so Safari can rasterise it without tainting the canvas. Used by PNG + Excel. */
+function buildSVG(){
+  const sz = state.size||1;
+  const fs = n => Math.max(1, Math.round(n*sz));
+  const ff = FONTS[state.font]||FONTS.sans;
+  const accent=state.accent, accent2=state.accent2, bg=state.bg, surf=state.surface, txt=state.text;
+  const nodeFill = state.gradient ? 'url(#ng)' : accent;
+  const PAD = 44;
+  const ev = state.events;
+  const mctx = (buildSVG._cv || (buildSVG._cv=document.createElement('canvas'))).getContext('2d');
+
+  function wrap(text, weight, size, maxW){
+    mctx.font = `${weight} ${size}px ${ff}`;
+    const words = String(text||'').split(/\s+/).filter(Boolean);
+    const out=[]; let cur='';
+    for(const w of words){ const t=cur?cur+' '+w:w; if(mctx.measureText(t).width<=maxW||!cur) cur=t; else { out.push(cur); cur=w; } }
+    if(cur) out.push(cur); return out.length?out:[''];
+  }
+  function tspan(x,y,size,weight,fill,op,extra,s){
+    return `<text x="${x}" y="${y}" font-family="${ff}" font-size="${size}" font-weight="${weight}" fill="${fill}"${op<1?` fill-opacity="${op}"`:''}${extra||''}>${esc(s)}</text>`;
+  }
+  function cardLayout(w, e){
+    const pad=fs(15), innerW=w-pad*2, blocks=[];
+    if(e.date) blocks.push({lines:[String(e.date).toUpperCase()], size:fs(11), weight:700, fill:accent, op:1, lh:fs(15), ls:.6});
+    blocks.push({lines:wrap(e.title||'Untitled',700,fs(16),innerW), size:fs(16), weight:700, fill:txt, op:1, lh:fs(21)});
+    if(e.desc) blocks.push({lines:wrap(e.desc,400,fs(13),innerW), size:fs(13), weight:400, fill:txt, op:.62, lh:fs(18)});
+    let th=0; blocks.forEach((b,i)=>{ th+=b.lines.length*b.lh; if(i<blocks.length-1) th+=fs(7); });
+    return {h:pad*2+th, blocks, pad, w};
+  }
+  function cardDraw(x,y,L){
+    const st=state.card; let fill=surf, stroke=txt, sop='.13', sw=1, fop=1, drawBox=true;
+    if(st==='outline'){ fill='none'; stroke=accent; sop='1'; sw=1.6; }
+    else if(st==='glass'){ fop=.85; }
+    else if(st==='minimal'){ drawBox=false; }
+    let s='';
+    if(drawBox) s+=`<rect x="${x}" y="${y}" width="${L.w}" height="${L.h}" rx="${fs(12)}" fill="${fill}"${fop<1?` fill-opacity="${fop}"`:''} stroke="${stroke}" stroke-opacity="${sop}" stroke-width="${sw}"/>`;
+    const tx = x + (drawBox?L.pad:fs(2));
+    let ty=y+L.pad;
+    L.blocks.forEach((b,i)=>{
+      b.lines.forEach(line=>{ ty+=b.lh; s+=tspan(tx, Math.round(ty-b.lh*0.28), b.size, b.weight, b.fill, b.op, b.ls?` letter-spacing="${b.ls}"`:'', line); });
+      if(i<L.blocks.length-1) ty+=fs(7);
+    });
+    return s;
+  }
+  function marker(cx,cy,i,e){
+    const halo=`<circle cx="${cx}" cy="${cy}" r="${fs(15)}" fill="${accent}" opacity="0.15"/>`;
+    if(e.icon) return `<circle cx="${cx}" cy="${cy}" r="${fs(17)}" fill="${surf}" stroke="${accent}" stroke-width="${fs(2)}"/>`+
+      `<text x="${cx}" y="${cy+fs(6)}" text-anchor="middle" font-size="${fs(17)}">${esc(e.icon)}</text>`;
+    const m=state.marker;
+    if(m==='num') return halo+`<circle cx="${cx}" cy="${cy}" r="${fs(15)}" fill="${nodeFill}"/>`+
+      `<text x="${cx}" y="${cy+fs(5)}" text-anchor="middle" font-family="${ff}" font-size="${fs(13)}" font-weight="700" fill="#fff">${i+1}</text>`;
+    const r=fs(9);
+    if(m==='ring')    return halo+`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${surf}" stroke="${accent}" stroke-width="${fs(3)}"/>`;
+    if(m==='square')  return halo+`<rect x="${cx-r}" y="${cy-r}" width="${2*r}" height="${2*r}" rx="${fs(3)}" fill="${nodeFill}"/>`;
+    if(m==='diamond') return halo+`<rect x="${cx-r}" y="${cy-r}" width="${2*r}" height="${2*r}" fill="${nodeFill}" transform="rotate(45 ${cx} ${cy})"/>`;
+    return halo+`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${nodeFill}"/>`;
+  }
+
+  // header height (independent of width)
+  let headH=PAD;
+  if(state.title) headH+=fs(36);
+  if(state.subtitle) headH+=fs(26);
+  headH+=fs(14);
+  const top=headH;
+  const headSVG = W => {
+    let s=''; let y=PAD;
+    if(state.title){ y+=fs(26); s+=`<text x="${W/2}" y="${y}" text-anchor="middle" font-family="${ff}" font-size="${fs(28)}" font-weight="800" fill="${txt}">${esc(state.title)}</text>`; y+=fs(10); }
+    if(state.subtitle){ y+=fs(14); s+=`<text x="${W/2}" y="${y}" text-anchor="middle" font-family="${ff}" font-size="${fs(15)}" fill="${txt}" fill-opacity="0.6">${esc(state.subtitle)}</text>`; }
+    return s;
+  };
+  const defs=`<defs><linearGradient id="ng" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${accent}"/><stop offset="1" stop-color="${accent2}"/></linearGradient></defs>`;
+
+  let W,H,body='';
+  const vertical = ['v-zig','v-rail','v-two'].includes(state.layout);
+
+  if(vertical || ev.length===0){
+    W = 720;
+    const railX = PAD+fs(14), cardX = railX+fs(40), cardW = W-PAD-cardX;
+    let y=top, nodes=''; const cys=[];
+    ev.forEach((e,i)=>{ const L=cardLayout(cardW,e); body+=cardDraw(cardX,y,L); const cy=y+fs(20); cys.push(cy); nodes+=marker(railX,cy,i,e); y+=L.h+fs(22); });
+    const lineBot = cys.length?cys[cys.length-1]:top;
+    const line = ev.length?`<line x1="${railX}" y1="${top+fs(4)}" x2="${railX}" y2="${lineBot}" stroke="${accent}" stroke-width="${fs(3)}" stroke-linecap="round"/>`:'';
+    H = (ev.length? y-fs(22) : top) + PAD;
+    body = line + body + nodes;
+  } else {
+    const itemW=fs(228), gap=fs(26), stem=fs(34), n=ev.length;
+    const Ls = ev.map(e=>cardLayout(itemW,e));
+    let maxA=0,maxB=0; Ls.forEach((L,i)=> i%2? maxB=Math.max(maxB,L.h): maxA=Math.max(maxA,L.h));
+    const trackW = n*itemW+(n-1)*gap;
+    W = Math.max(trackW+PAD*2, 520);
+    const startX = (W-trackW)/2;
+    const centerY = top+maxA+stem+fs(12);
+    let nodes='',stems='';
+    Ls.forEach((L,i)=>{
+      const x=startX+i*(itemW+gap), cx=x+itemW/2;
+      if(i%2===0){ body+=cardDraw(x, centerY-stem-L.h, L); stems+=`<line x1="${cx}" y1="${centerY-stem}" x2="${cx}" y2="${centerY}" stroke="${accent}" stroke-width="${fs(2)}"/>`; }
+      else { body+=cardDraw(x, centerY+stem, L); stems+=`<line x1="${cx}" y1="${centerY}" x2="${cx}" y2="${centerY+stem}" stroke="${accent}" stroke-width="${fs(2)}"/>`; }
+      nodes+=marker(cx,centerY,i,ev[i]);
+    });
+    const mainLine=`<line x1="${PAD}" y1="${centerY}" x2="${W-PAD}" y2="${centerY}" stroke="${accent}" stroke-width="${fs(3)}" stroke-linecap="round"/>`;
+    H = centerY+maxB+stem+PAD;
+    body = mainLine + stems + body + nodes;
+  }
+
+  W=Math.round(W); H=Math.round(H);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`+
+    defs+`<rect x="0" y="0" width="${W}" height="${H}" fill="${bg}"/>`+ body + headSVG(W) +`</svg>`;
+  return {svg, w:W, h:H};
+}
+
+// Rasterise the native SVG to a 2× canvas (shared by PNG + Excel-embed).
+function timelineToCanvas(){
+  return new Promise((resolve,reject)=>{
+    try{
+      const {svg,w,h} = buildSVG();
+      const url = URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
+      const im = new Image();
+      im.onload = ()=>{
+        const scale = 2;
+        const cv = document.createElement('canvas');
+        cv.width = w*scale; cv.height = h*scale;
+        const ctx = cv.getContext('2d'); ctx.scale(scale,scale); ctx.drawImage(im,0,0);
+        URL.revokeObjectURL(url);
+        resolve({cv,w,h});
+      };
+      im.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error('rasterise failed')); };
+      im.src = url;
+    }catch(err){ reject(err); }
+  });
+}
+function canvasToBytes(cv){
+  return new Promise((res,rej)=>cv.toBlob(b=> b ? b.arrayBuffer().then(ab=>res(new Uint8Array(ab))) : rej(new Error('no blob')), 'image/png'));
+}
+function exportPNG(){
+  timelineToCanvas()
+    .then(({cv})=>cv.toBlob(b=>downloadBlob(b,(state.title||'timeline')+'.png'),'image/png'))
+    .catch(()=>alert('PNG export isn’t supported in this browser. Use “PDF” (Save as PDF) instead — it always works.'));
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function initAll(){ buildGallery(); buildEvents(); syncControls(); renderPreview(); }
+bind();
+initAll();
+</script>
+</body>
+</html>
