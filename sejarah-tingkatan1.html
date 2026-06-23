@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Sejarah Tingkatan 1 — Belajar Sambil Bermain</title>
+<style>
+  :root{
+    --bg1:#0f2a4a; --bg2:#163b6b; --card:#ffffff; --ink:#1f2937;
+    --accent:#ff7b54; --accent2:#21a0a0; --gold:#ffce3a;
+    --good:#2ec4b6; --bad:#ff5d6c; --muted:#6b7280;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; min-height:100%;}
+  body{
+    font-family:"Segoe UI",-apple-system,system-ui,"Trebuchet MS",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #2a5a8f 0%, transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, #1e7d7d 0%, transparent 55%),
+      linear-gradient(160deg,var(--bg1),var(--bg2));
+    background-attachment:fixed;
+    min-height:100vh;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:14px 14px 70px;}
+
+  /* Header */
+  header{color:#fff; text-align:center; margin-bottom:10px;}
+  .crest{font-size:40px; line-height:1;}
+  h1{font-size:clamp(24px,6vw,36px); margin:4px 0 2px; letter-spacing:.5px;
+     text-shadow:0 2px 0 rgba(0,0,0,.25);}
+  .subtitle{margin:0; opacity:.85; font-size:15px;}
+
+  /* Top controls */
+  .topbar{display:flex; align-items:center; justify-content:space-between;
+          gap:10px; margin:12px 0; flex-wrap:wrap;}
+  .lang-toggle{display:inline-flex; background:rgba(255,255,255,.15); border-radius:999px;
+               padding:4px; backdrop-filter:blur(4px);}
+  .lang-toggle button{border:none; background:transparent; color:#fff; font-weight:700;
+               padding:8px 16px; border-radius:999px; cursor:pointer; font-size:15px;}
+  .lang-toggle button.active{background:#fff; color:var(--bg2);}
+  .hint{color:#ffe; font-size:13px; opacity:.9; display:flex; align-items:center; gap:6px;}
+  .chapsel select{font-family:inherit; font-size:14px; padding:8px 12px; border-radius:12px;
+               border:none; background:#fff; color:var(--ink); font-weight:600;}
+
+  /* Tabs */
+  .tabs{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px;}
+  .tab{border:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:13px;
+       color:#fff; background:rgba(255,255,255,.12); padding:12px 6px; border-radius:14px;
+       display:flex; flex-direction:column; align-items:center; gap:4px; transition:.15s;}
+  .tab .ic{font-size:22px;}
+  .tab.active{background:var(--accent); box-shadow:0 5px 0 rgba(0,0,0,.2);}
+
+  /* Panels */
+  .panel{background:var(--card); border-radius:20px; padding:18px; box-shadow:0 14px 40px rgba(0,0,0,.25);
+         animation:rise .25s ease;}
+  @keyframes rise{from{transform:translateY(10px); opacity:0;} to{transform:none; opacity:1;}}
+
+  /* Terms (word-level Chinese) */
+  .term{color:var(--accent2); font-weight:700; cursor:help;
+        border-bottom:2px dotted var(--accent2); padding-bottom:1px;}
+  .term:active{color:var(--accent);}
+
+  /* Floating Chinese tip */
+  #tip{position:fixed; z-index:200; display:none; transform:translate(-50%,-100%);
+       background:#111827; color:#fff; padding:8px 14px; border-radius:12px; font-size:18px;
+       font-weight:700; white-space:nowrap; box-shadow:0 8px 24px rgba(0,0,0,.4);
+       pointer-events:none; max-width:80vw;}
+  #tip .zh{font-size:19px;}
+  #tip .rom{display:block; font-size:12px; font-weight:500; opacity:.7; white-space:normal;}
+  #tip:after{content:''; position:absolute; left:50%; top:100%; transform:translateX(-50%);
+       border:8px solid transparent; border-top-color:#111827;}
+  #tip.below{transform:translate(-50%,0);}
+  #tip.below:after{top:auto; bottom:100%; border-top-color:transparent; border-bottom-color:#111827;}
+
+  /* NOTES / TIMELINE */
+  .chap-block{margin-bottom:22px;}
+  .chap-head{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+  .chap-head .num{background:var(--bg2); color:#fff; font-weight:800; width:34px; height:34px;
+        border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:15px;}
+  .chap-head h3{margin:0; font-size:18px;}
+  .timeline{list-style:none; margin:0; padding:0 0 0 8px; border-left:3px solid #e5e7eb;}
+  .timeline li{position:relative; padding:0 0 14px 20px; font-size:15.5px; line-height:1.5;}
+  .timeline li:before{content:''; position:absolute; left:-9px; top:5px; width:14px; height:14px;
+        background:var(--accent); border:3px solid #fff; border-radius:50%; box-shadow:0 0 0 2px #e5e7eb;}
+
+  /* FLASHCARDS */
+  .fc-stage{perspective:1200px; margin:6px 0 14px;}
+  .flashcard{position:relative; width:100%; min-height:230px; cursor:pointer;
+        transform-style:preserve-3d; transition:transform .5s; }
+  .flashcard.flipped{transform:rotateY(180deg);}
+  .face{position:absolute; inset:0; backface-visibility:hidden; border-radius:18px; padding:22px;
+        display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;}
+  .face .lbl{position:absolute; top:12px; left:16px; font-size:12px; font-weight:800; letter-spacing:1px;
+        text-transform:uppercase; opacity:.6;}
+  .front{background:linear-gradient(160deg,#fff,#eef6ff); border:2px solid #dbeafe;}
+  .back{background:linear-gradient(160deg,#fff7ec,#ffe9cf); border:2px solid #ffd9a8; transform:rotateY(180deg);}
+  .face .txt{font-size:19px; line-height:1.5; font-weight:600;}
+  .flip-hint{font-size:13px; color:var(--muted); position:absolute; bottom:12px; width:100%; left:0;}
+  .fc-controls{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .counter{font-weight:700; color:var(--muted);}
+
+  /* QUIZ */
+  .qscore{display:flex; gap:8px; justify-content:center; margin-bottom:12px; flex-wrap:wrap;}
+  .pill{background:#f3f4f6; border-radius:999px; padding:6px 14px; font-weight:700; font-size:14px;}
+  .question{font-size:20px; font-weight:700; line-height:1.45; text-align:center; margin:6px 0 16px;}
+  .opts{display:grid; grid-template-columns:1fr; gap:10px;}
+  .opt{border:2px solid #e5e7eb; background:#fff; cursor:pointer; font-family:inherit;
+       font-size:16px; font-weight:600; padding:14px; border-radius:14px; text-align:left; transition:.12s;}
+  .opt:active{transform:scale(.99);}
+  .opt.correct{background:var(--good); border-color:var(--good); color:#fff;}
+  .opt.wrong{background:var(--bad); border-color:var(--bad); color:#fff;}
+  .opt:disabled{cursor:default;}
+  .q-feedback{text-align:center; font-weight:700; font-size:17px; min-height:26px; margin-top:14px;}
+  .q-feedback.good{color:var(--good);} .q-feedback.bad{color:var(--bad);}
+
+  /* MATCH */
+  .match-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .match-col{display:flex; flex-direction:column; gap:10px;}
+  .mitem{border:2px solid #e5e7eb; background:#fff; cursor:pointer; font-family:inherit;
+        font-size:15px; font-weight:600; padding:13px 10px; border-radius:12px; text-align:center; transition:.12s;}
+  .mitem.sel{border-color:var(--accent); background:#fff3ee;}
+  .mitem.matched{background:var(--good); border-color:var(--good); color:#fff; cursor:default; opacity:.85;}
+  .mitem.miss{animation:shake .4s;}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  /* generic buttons */
+  .btn{border:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:15px;
+       padding:11px 18px; border-radius:999px; background:var(--bg2); color:#fff;
+       box-shadow:0 4px 0 rgba(0,0,0,.2);}
+  .btn:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.2);}
+  .btn.alt{background:var(--accent);}
+  .btn.ghost{background:#f3f4f6; color:var(--ink); box-shadow:0 4px 0 #e5e7eb;}
+  .center{text-align:center; margin-top:14px;}
+
+  .banner{background:#fff8e1; border:1px solid #ffe08a; color:#6b5300; border-radius:14px;
+       padding:10px 36px 10px 14px; font-size:13px; margin-bottom:12px; position:relative;}
+  .banner b{color:#8a6d00;}
+  .banner .x{position:absolute; right:8px; top:6px; border:none; background:none; cursor:pointer;
+       font-size:18px; color:#8a6d00;}
+
+  .confetti{position:fixed; top:-20px; width:11px; height:11px; z-index:150; pointer-events:none; border-radius:2px;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);}}
+  footer{text-align:center; color:#cdd9ec; font-size:12px; margin-top:22px;}
+</style>
+</head>
+<body>
+<div id="tip"></div>
+<div class="wrap">
+  <header>
+    <div class="crest">📜🇲🇾</div>
+    <h1>Sejarah Tingkatan 1</h1>
+    <p class="subtitle" id="subtitle">Belajar sambil bermain!</p>
+  </header>
+
+  <div class="banner" id="banner">
+    <b id="bannerText">Kandungan ini berdasarkan sukatan standard KSSM Sejarah Tingkatan 1.</b>
+    <button class="x" onclick="document.getElementById('banner').remove()">×</button>
+  </div>
+
+  <div class="topbar">
+    <div class="lang-toggle">
+      <button id="btnMS" class="active" onclick="setLang('ms')">🇲🇾 BM</button>
+      <button id="btnEN" onclick="setLang('en')">🇬🇧 EN</button>
+    </div>
+    <div class="chapsel">
+      <select id="chapSelect" onchange="setChapter(this.value)"></select>
+    </div>
+    <div class="hint" id="hint">👆 <span></span></div>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="notes" onclick="setTab('notes')"><span class="ic">📖</span><span class="t-notes"></span></button>
+    <button class="tab" data-tab="cards" onclick="setTab('cards')"><span class="ic">🃏</span><span class="t-cards"></span></button>
+    <button class="tab" data-tab="quiz" onclick="setTab('quiz')"><span class="ic">❓</span><span class="t-quiz"></span></button>
+    <button class="tab" data-tab="match" onclick="setTab('match')"><span class="ic">🔗</span><span class="t-match"></span></button>
+  </nav>
+
+  <div id="content"></div>
+
+  <footer>❤️ Untuk pelajar yang ingin tahu • Berfungsi tanpa internet (offline)</footer>
+</div>
+
+<script>
+/* =========================================================
+   GLOSSARY — key terms with Malay / English / Chinese
+   (Chinese shows in the floating popup on tap/hover)
+   ========================================================= */
+const GLOSS = {
+  sejarah:        {ms:'sejarah', en:'history', zh:'历史', rom:'lìshǐ'},
+  fakta:          {ms:'fakta', en:'facts', zh:'史实', rom:'shǐshí'},
+  kronologi:      {ms:'kronologi', en:'chronology', zh:'年代顺序', rom:'niándài shùnxù'},
+  tafsiran:       {ms:'tafsiran', en:'interpretation', zh:'诠释 / 解读', rom:'quánshì'},
+  sumberPrimer:   {ms:'sumber primer', en:'primary sources', zh:'第一手史料', rom:'dì-yī shǒu shǐliào'},
+  sumberSekunder: {ms:'sumber sekunder', en:'secondary sources', zh:'第二手史料', rom:'dì-èr shǒu shǐliào'},
+  prasejarah:     {ms:'prasejarah', en:'prehistory', zh:'史前时代', rom:'shǐqián shídài'},
+  tulisan:        {ms:'tulisan', en:'writing', zh:'文字', rom:'wénzì'},
+  paleolitik:     {ms:'Paleolitik', en:'Palaeolithic', zh:'旧石器时代', rom:'jiù shíqì shídài'},
+  mesolitik:      {ms:'Mesolitik', en:'Mesolithic', zh:'中石器时代', rom:'zhōng shíqì shídài'},
+  neolitik:       {ms:'Neolitik', en:'Neolithic', zh:'新石器时代', rom:'xīn shíqì shídài'},
+  zamanLogam:     {ms:'Zaman Logam', en:'Metal Age', zh:'金属时代', rom:'jīnshǔ shídài'},
+  lenggong:       {ms:'Lembah Lenggong', en:'Lenggong Valley', zh:'玲珑谷（霹雳）', rom:'Línglóng gǔ'},
+  guaNiah:        {ms:'Gua Niah', en:'Niah Caves', zh:'尼亚石洞（砂拉越）', rom:'Níyà shídòng'},
+  tamadun:        {ms:'tamadun', en:'civilisation', zh:'文明', rom:'wénmíng'},
+  sungai:         {ms:'sungai', en:'rivers', zh:'河流', rom:'héliú'},
+  kota:           {ms:'kota', en:'cities', zh:'城市', rom:'chéngshì'},
+  mesopotamia:    {ms:'Mesopotamia', en:'Mesopotamia', zh:'美索不达米亚文明', rom:'Měisuǒbùdámǐyà'},
+  mesir:          {ms:'Mesir Purba', en:'Ancient Egypt', zh:'古埃及文明', rom:'gǔ Āijí'},
+  indus:          {ms:'Lembah Indus', en:'Indus Valley', zh:'印度河流域文明', rom:'Yìndùhé liúyù'},
+  hwangho:        {ms:'Hwang Ho', en:'Yellow River', zh:'黄河文明', rom:'Huánghé'},
+  piramid:        {ms:'piramid', en:'pyramids', zh:'金字塔', rom:'jīnzìtǎ'},
+  firaun:         {ms:'firaun', en:'pharaoh', zh:'法老', rom:'fǎlǎo'},
+  hieroglif:      {ms:'hieroglif', en:'hieroglyphics', zh:'象形文字', rom:'xiàngxíng wénzì'},
+  agraria:        {ms:'kerajaan agraria', en:'agrarian kingdoms', zh:'农业王国', rom:'nóngyè wángguó'},
+  maritim:        {ms:'kerajaan maritim', en:'maritime kingdoms', zh:'海洋贸易王国', rom:'hǎiyáng màoyì wángguó'},
+  angkor:         {ms:'Angkor', en:'Angkor', zh:'吴哥（柬埔寨）', rom:'Wúgē'},
+  srivijaya:      {ms:'Srivijaya', en:'Srivijaya', zh:'室利佛逝', rom:'Shìlìfóshì'},
+  funan:          {ms:'Funan', en:'Funan', zh:'扶南', rom:'Fúnán'},
+  selatMelaka:    {ms:'Selat Melaka', en:'Strait of Malacca', zh:'马六甲海峡', rom:'Mǎliùjiǎ hǎixiá'},
+};
+
+/* =========================================================
+   CONTENT — Sejarah Tingkatan 1 (standard KSSM overview)
+   ========================================================= */
+const CHAPTERS = [
+  {
+    title:{ms:'Pengertian Sejarah & Sumber', en:'Meaning of History & Sources'},
+    notes:[
+      {ms:'[[sejarah]] ialah catatan tentang peristiwa benar yang berlaku pada masa lalu.',
+       en:'[[sejarah]] is the record of true events that happened in the past.'},
+      {ms:'Ciri sejarah: [[fakta]] yang tepat, disusun mengikut [[kronologi]] dan berdasarkan bukti.',
+       en:'Features of history: accurate [[fakta]], arranged by [[kronologi]] and based on evidence.'},
+      {ms:'[[sumberPrimer]] ialah sumber asli yang belum diolah, seperti artifak, fosil dan dokumen rasmi.',
+       en:'[[sumberPrimer]] are original, unprocessed sources such as artefacts, fossils and official documents.'},
+      {ms:'[[sumberSekunder]] ialah sumber yang telah dikaji semula, seperti buku teks dan majalah.',
+       en:'[[sumberSekunder]] are studied sources such as textbooks and magazines.'},
+      {ms:'Ahli sejarah membuat [[tafsiran]] berdasarkan bukti untuk memahami masa lalu.',
+       en:'Historians make [[tafsiran]] based on evidence to understand the past.'},
+    ],
+    cards:[
+      {f:{ms:'Apakah sumber primer?',en:'What is a primary source?'},
+       b:{ms:'Sumber asli yang belum diolah — cth: artifak, fosil, dokumen asal.',en:'An original, unprocessed source — e.g. artefacts, fossils, original documents.'}},
+      {f:{ms:'Apakah sumber sekunder?',en:'What is a secondary source?'},
+       b:{ms:'Sumber yang telah dikaji & ditulis semula — cth: buku, majalah, akhbar.',en:'A studied & rewritten source — e.g. books, magazines, newspapers.'}},
+      {f:{ms:'Apakah kronologi?',en:'What is chronology?'},
+       b:{ms:'Susunan peristiwa mengikut urutan masa.',en:'The arrangement of events in order of time.'}},
+      {f:{ms:'Mengapa kita belajar sejarah?',en:'Why do we study history?'},
+       b:{ms:'Untuk mengambil iktibar, memupuk semangat patriotik dan jati diri.',en:'To learn lessons and build patriotism and identity.'}},
+    ],
+    quiz:[
+      {q:{ms:'Sumber yang masih asli dan belum diolah dipanggil?',en:'A source that is still original and unprocessed is called?'},
+       o:[{ms:'Sumber primer',en:'Primary source'},{ms:'Sumber sekunder',en:'Secondary source'},{ms:'Tafsiran',en:'Interpretation'},{ms:'Mitos',en:'Myth'}],a:0},
+      {q:{ms:'Susunan peristiwa mengikut urutan masa ialah?',en:'Arranging events in order of time is?'},
+       o:[{ms:'Kronologi',en:'Chronology'},{ms:'Fakta',en:'Fact'},{ms:'Legenda',en:'Legend'},{ms:'Tafsiran',en:'Interpretation'}],a:0},
+      {q:{ms:'Manakah CONTOH sumber sekunder?',en:'Which is an EXAMPLE of a secondary source?'},
+       o:[{ms:'Buku teks',en:'A textbook'},{ms:'Fosil',en:'A fossil'},{ms:'Artifak',en:'An artefact'},{ms:'Batu bersurat',en:'An inscribed stone'}],a:0},
+    ],
+    match:[
+      {a:{ms:'Sumber primer',en:'Primary source'}, b:{ms:'Artifak & fosil',en:'Artefacts & fossils'}},
+      {a:{ms:'Sumber sekunder',en:'Secondary source'}, b:{ms:'Buku & majalah',en:'Books & magazines'}},
+      {a:{ms:'Kronologi',en:'Chronology'}, b:{ms:'Urutan masa',en:'Order of time'}},
+      {a:{ms:'Tafsiran',en:'Interpretation'}, b:{ms:'Penilaian bukti',en:'Judging evidence'}},
+    ],
+  },
+  {
+    title:{ms:'Zaman Prasejarah', en:'The Prehistoric Era'},
+    notes:[
+      {ms:'[[prasejarah]] ialah zaman sebelum manusia mencipta sistem [[tulisan]].',
+       en:'[[prasejarah]] is the era before humans invented a [[tulisan]] system.'},
+      {ms:'Zaman prasejarah dibahagikan kepada [[paleolitik]], [[mesolitik]], [[neolitik]] dan [[zamanLogam]].',
+       en:'Prehistory is divided into the [[paleolitik]], [[mesolitik]], [[neolitik]] and [[zamanLogam]].'},
+      {ms:'Manusia [[paleolitik]] hidup nomad, berburu dan tinggal di dalam gua.',
+       en:'[[paleolitik]] people were nomads who hunted and lived in caves.'},
+      {ms:'Pada zaman [[neolitik]], manusia mula bercucuk tanam dan tinggal menetap.',
+       en:'In the [[neolitik]], people began farming and living in settlements.'},
+      {ms:'Di Malaysia, [[lenggong]] dan [[guaNiah]] ialah tapak prasejarah yang penting.',
+       en:'In Malaysia, the [[lenggong]] and [[guaNiah]] are important prehistoric sites.'},
+    ],
+    cards:[
+      {f:{ms:'Bagaimana manusia Paleolitik hidup?',en:'How did Palaeolithic people live?'},
+       b:{ms:'Nomad, berburu & memungut makanan, tinggal di dalam gua.',en:'Nomadic, hunting & gathering food, living in caves.'}},
+      {f:{ms:'Apa perubahan besar zaman Neolitik?',en:'What was the big change in the Neolithic?'},
+       b:{ms:'Mula bercucuk tanam, menternak & hidup menetap.',en:'Began farming, raising animals & settling down.'}},
+      {f:{ms:'Di mana "Perak Man" ditemui?',en:'Where was "Perak Man" found?'},
+       b:{ms:'Lembah Lenggong, Perak — rangka prasejarah terlengkap di Asia Tenggara.',en:'Lenggong Valley, Perak — the most complete prehistoric skeleton in SE Asia.'}},
+      {f:{ms:'Apa ciri Zaman Logam?',en:'What marks the Metal Age?'},
+       b:{ms:'Manusia mula membuat alatan & senjata daripada gangsa dan besi.',en:'People began making tools & weapons from bronze and iron.'}},
+    ],
+    quiz:[
+      {q:{ms:'Manusia zaman Paleolitik hidup secara?',en:'Palaeolithic people lived as?'},
+       o:[{ms:'Nomad',en:'Nomads'},{ms:'Petani menetap',en:'Settled farmers'},{ms:'Pedagang',en:'Traders'},{ms:'Nelayan moden',en:'Modern fishermen'}],a:0},
+      {q:{ms:'Bercucuk tanam mula berlaku pada zaman?',en:'Farming began in the?'},
+       o:[{ms:'Neolitik',en:'Neolithic'},{ms:'Paleolitik',en:'Palaeolithic'},{ms:'Mesolitik',en:'Mesolithic'},{ms:'Zaman Logam',en:'Metal Age'}],a:0},
+      {q:{ms:'Gua Niah terletak di negeri?',en:'Niah Caves are located in?'},
+       o:[{ms:'Sarawak',en:'Sarawak'},{ms:'Perak',en:'Perak'},{ms:'Pahang',en:'Pahang'},{ms:'Kedah',en:'Kedah'}],a:0},
+    ],
+    match:[
+      {a:{ms:'Paleolitik',en:'Palaeolithic'}, b:{ms:'Berburu & nomad',en:'Hunting & nomadic'}},
+      {a:{ms:'Neolitik',en:'Neolithic'}, b:{ms:'Bercucuk tanam',en:'Farming'}},
+      {a:{ms:'Lembah Lenggong',en:'Lenggong Valley'}, b:{ms:'Perak',en:'Perak'}},
+      {a:{ms:'Gua Niah',en:'Niah Caves'}, b:{ms:'Sarawak',en:'Sarawak'}},
+    ],
+  },
+  {
+    title:{ms:'Tamadun Awal Manusia', en:'Early Human Civilisations'},
+    notes:[
+      {ms:'[[tamadun]] awal muncul di lembah [[sungai]] yang subur.',
+       en:'Early [[tamadun]] arose in the fertile valleys of great [[sungai]].'},
+      {ms:'Empat tamadun awal: [[mesopotamia]], [[mesir]], [[indus]] dan [[hwangho]].',
+       en:'The four early civilisations: [[mesopotamia]], [[mesir]], [[indus]] and [[hwangho]].'},
+      {ms:'Ciri tamadun: kewujudan [[kota]], sistem [[tulisan]], agama dan organisasi sosial.',
+       en:'Features of a civilisation: [[kota]], a [[tulisan]] system, religion and social organisation.'},
+      {ms:'Tamadun [[mesir]] terkenal dengan [[piramid]], [[firaun]] dan tulisan [[hieroglif]].',
+       en:'[[mesir]] is famous for [[piramid]], the [[firaun]] and [[hieroglif]] writing.'},
+      {ms:'Tamadun [[mesopotamia]] mencipta tulisan cuneiform dan Kod Undang-undang Hammurabi.',
+       en:'[[mesopotamia]] created cuneiform writing and the Code of Hammurabi.'},
+    ],
+    cards:[
+      {f:{ms:'Di mana tamadun awal bermula?',en:'Where did early civilisations begin?'},
+       b:{ms:'Di lembah sungai yang subur (tanah subur + air untuk pertanian).',en:'In fertile river valleys (rich soil + water for farming).'}},
+      {f:{ms:'Sebutkan empat tamadun awal.',en:'Name the four early civilisations.'},
+       b:{ms:'Mesopotamia, Mesir, Lembah Indus, Hwang Ho.',en:'Mesopotamia, Egypt, Indus Valley, Yellow River.'}},
+      {f:{ms:'Apa sumbangan tamadun Mesir?',en:'What did Egypt contribute?'},
+       b:{ms:'Piramid, tulisan hieroglif, kalendar 365 hari.',en:'Pyramids, hieroglyphic writing, the 365-day calendar.'}},
+      {f:{ms:'Apa ciri-ciri sesebuah tamadun?',en:'What are the features of a civilisation?'},
+       b:{ms:'Kota, tulisan, agama, organisasi sosial & ekonomi.',en:'Cities, writing, religion, social & economic organisation.'}},
+    ],
+    quiz:[
+      {q:{ms:'Tamadun awal kebanyakannya muncul di?',en:'Early civilisations mostly arose at?'},
+       o:[{ms:'Lembah sungai',en:'River valleys'},{ms:'Puncak gunung',en:'Mountain peaks'},{ms:'Padang pasir',en:'Deserts'},{ms:'Dalam gua',en:'Inside caves'}],a:0},
+      {q:{ms:'Piramid dan firaun ialah ciri tamadun?',en:'Pyramids and pharaohs belong to which civilisation?'},
+       o:[{ms:'Mesir Purba',en:'Ancient Egypt'},{ms:'Hwang Ho',en:'Yellow River'},{ms:'Indus',en:'Indus'},{ms:'Mesopotamia',en:'Mesopotamia'}],a:0},
+      {q:{ms:'Tulisan cuneiform dicipta oleh tamadun?',en:'Cuneiform writing was created by?'},
+       o:[{ms:'Mesopotamia',en:'Mesopotamia'},{ms:'Mesir',en:'Egypt'},{ms:'Indus',en:'Indus'},{ms:'Hwang Ho',en:'Yellow River'}],a:0},
+    ],
+    match:[
+      {a:{ms:'Mesopotamia',en:'Mesopotamia'}, b:{ms:'Sungai Tigris–Euphrates',en:'Tigris–Euphrates'}},
+      {a:{ms:'Mesir',en:'Egypt'}, b:{ms:'Sungai Nil',en:'River Nile'}},
+      {a:{ms:'Lembah Indus',en:'Indus Valley'}, b:{ms:'Sungai Indus',en:'River Indus'}},
+      {a:{ms:'Hwang Ho',en:'Yellow River'}, b:{ms:'Sungai Kuning',en:'Yellow River (Huang He)'}},
+    ],
+  },
+  {
+    title:{ms:'Tamadun Awal di Asia Tenggara', en:'Early Civilisations in Southeast Asia'},
+    notes:[
+      {ms:'Kerajaan awal Asia Tenggara terbahagi kepada [[agraria]] dan [[maritim]].',
+       en:'Early Southeast Asian kingdoms were either [[agraria]] or [[maritim]].'},
+      {ms:'[[agraria]] bergantung kepada pertanian, manakala [[maritim]] bergantung kepada perdagangan laut.',
+       en:'[[agraria]] depended on farming, while [[maritim]] depended on sea trade.'},
+      {ms:'[[angkor]] ialah contoh kerajaan agraria yang terkenal di Asia Tenggara.',
+       en:'[[angkor]] is a famous agrarian kingdom of Southeast Asia.'},
+      {ms:'[[srivijaya]] dan [[funan]] ialah kerajaan maritim yang menguasai perdagangan.',
+       en:'[[srivijaya]] and [[funan]] were maritime kingdoms that controlled trade.'},
+      {ms:'Kedudukan strategik di [[selatMelaka]] menjadikan rantau ini pusat perdagangan dunia.',
+       en:'A strategic position on the [[selatMelaka]] made the region a world trade hub.'},
+    ],
+    cards:[
+      {f:{ms:'Apa beza kerajaan agraria & maritim?',en:'Agrarian vs maritime kingdoms?'},
+       b:{ms:'Agraria → pertanian di pedalaman; Maritim → perdagangan di pesisir laut.',en:'Agrarian → inland farming; Maritime → coastal sea trade.'}},
+      {f:{ms:'Contoh kerajaan agraria?',en:'Example of an agrarian kingdom?'},
+       b:{ms:'Angkor (Kemboja) — terkenal dengan sistem pengairan & candi.',en:'Angkor (Cambodia) — famous for irrigation & temples.'}},
+      {f:{ms:'Contoh kerajaan maritim?',en:'Example of a maritime kingdom?'},
+       b:{ms:'Srivijaya & Funan — menguasai laluan perdagangan laut.',en:'Srivijaya & Funan — controlled sea trade routes.'}},
+      {f:{ms:'Mengapa Selat Melaka penting?',en:'Why is the Strait of Malacca important?'},
+       b:{ms:'Laluan singkat antara China & India — pusat pertemuan pedagang.',en:'A short route between China & India — a meeting point for traders.'}},
+    ],
+    quiz:[
+      {q:{ms:'Kerajaan yang bergantung pada perdagangan laut ialah?',en:'A kingdom that relied on sea trade is?'},
+       o:[{ms:'Kerajaan maritim',en:'Maritime kingdom'},{ms:'Kerajaan agraria',en:'Agrarian kingdom'},{ms:'Kerajaan nomad',en:'Nomadic kingdom'},{ms:'Kerajaan gua',en:'Cave kingdom'}],a:0},
+      {q:{ms:'Angkor merupakan kerajaan jenis?',en:'Angkor was which type of kingdom?'},
+       o:[{ms:'Agraria',en:'Agrarian'},{ms:'Maritim',en:'Maritime'},{ms:'Industri',en:'Industrial'},{ms:'Nomad',en:'Nomadic'}],a:0},
+      {q:{ms:'Selat Melaka penting kerana?',en:'The Strait of Malacca was important because?'},
+       o:[{ms:'Laluan perdagangan strategik',en:'A strategic trade route'},{ms:'Banyak gunung berapi',en:'It had many volcanoes'},{ms:'Tiada air',en:'It had no water'},{ms:'Tanah tandus',en:'It had barren land'}],a:0},
+    ],
+    match:[
+      {a:{ms:'Agraria',en:'Agrarian'}, b:{ms:'Pertanian',en:'Farming'}},
+      {a:{ms:'Maritim',en:'Maritime'}, b:{ms:'Perdagangan laut',en:'Sea trade'}},
+      {a:{ms:'Angkor',en:'Angkor'}, b:{ms:'Kemboja',en:'Cambodia'}},
+      {a:{ms:'Srivijaya',en:'Srivijaya'}, b:{ms:'Sumatera',en:'Sumatra'}},
+    ],
+  },
+];
+
+/* =========================================================
+   UI STRINGS
+   ========================================================= */
+const UI = {
+  subtitle:{ms:'Belajar sambil bermain!', en:'Learn while you play!'},
+  banner:{ms:'Kandungan ini berdasarkan sukatan standard KSSM Sejarah Tingkatan 1. Hantar PDF anda untuk dipadankan dengan tepat.',
+          en:'This content follows the standard KSSM Sejarah Tingkatan 1 syllabus. Send your PDF to match it exactly.'},
+  hint:{ms:'Tekan perkataan bergaris untuk lihat 中文', en:'Tap underlined words to see 中文'},
+  allChapters:{ms:'📚 Semua Bab', en:'📚 All Chapters'},
+  tNotes:{ms:'Nota', en:'Notes'}, tCards:{ms:'Kad', en:'Cards'},
+  tQuiz:{ms:'Kuiz', en:'Quiz'}, tMatch:{ms:'Padanan', en:'Match'},
+  front:{ms:'Soalan', en:'Question'}, back:{ms:'Jawapan', en:'Answer'},
+  flip:{ms:'👆 Ketik untuk balik', en:'👆 Tap to flip'},
+  prev:{ms:'‹ Sebelum', en:'‹ Prev'}, next:{ms:'Seterusnya ›', en:'Next ›'},
+  shuffle:{ms:'🔀 Kocok', en:'🔀 Shuffle'},
+  score:{ms:'Markah', en:'Score'}, streak:{ms:'Streak', en:'Streak'},
+  correct:{ms:'Betul! 🎉', en:'Correct! 🎉'}, wrong:{ms:'Cuba lagi! Jawapan: ', en:'Try again! Answer: '},
+  nextQ:{ms:'Soalan seterusnya ➡', en:'Next question ➡'},
+  matchTip:{ms:'Padankan istilah dengan maksudnya 👇', en:'Match each term to its meaning 👇'},
+  matchWin:{ms:'🏆 Hebat! Semua dipadankan!', en:'🏆 Awesome! All matched!'},
+  newSet:{ms:'Set baharu 🔄', en:'New set 🔄'},
+};
+
+/* =========================================================
+   STATE + HELPERS
+   ========================================================= */
+const state = {lang:'ms', tab:'notes', chapter:'all', score:0, streak:0};
+const $ = id => document.getElementById(id);
+const L = obj => obj[state.lang];
+const rand = n => Math.floor(Math.random()*n);
+const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+
+function renderText(block){
+  return L(block).replace(/\[\[(\w+)\]\]/g,(m,key)=>{
+    const t = GLOSS[key]; if(!t) return key;
+    return `<span class="term" data-key="${key}" tabindex="0">${t[state.lang]||t.ms}</span>`;
+  });
+}
+function activeChapters(){
+  return state.chapter==='all' ? CHAPTERS : [CHAPTERS[+state.chapter]];
+}
+
+/* =========================================================
+   FLOATING CHINESE TIP
+   ========================================================= */
+const tip = $('tip');
+const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+let activeTermEl = null;
+
+function showTip(el){
+  const t = GLOSS[el.dataset.key]; if(!t) return;
+  tip.innerHTML = `<span class="zh">${t.zh}</span><span class="rom">${t.rom||''}</span>`;
+  tip.style.display='block';
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width/2;
+  tip.style.left = Math.min(Math.max(cx,70), window.innerWidth-70) + 'px';
+  if(r.top < 80){ tip.classList.add('below'); tip.style.top = (r.bottom + 10) + 'px'; }
+  else { tip.classList.remove('below'); tip.style.top = (r.top - 10) + 'px'; }
+  activeTermEl = el;
+}
+function hideTip(){ tip.style.display='none'; activeTermEl=null; }
+
+if(!isTouch){
+  document.addEventListener('mouseover', e=>{ const t=e.target.closest('.term'); if(t) showTip(t); });
+  document.addEventListener('mouseout',  e=>{ const t=e.target.closest('.term'); if(t) hideTip(); });
+}
+document.addEventListener('click', e=>{
+  const t = e.target.closest('.term');
+  if(t){ (activeTermEl===t) ? hideTip() : showTip(t); }
+  else hideTip();
+});
+window.addEventListener('scroll', hideTip, true);
+
+/* =========================================================
+   NAV
+   ========================================================= */
+function setLang(lang){
+  state.lang = lang;
+  document.documentElement.lang = lang;
+  $('btnMS').classList.toggle('active', lang==='ms');
+  $('btnEN').classList.toggle('active', lang==='en');
+  hideTip();
+  applyStaticText();
+  render();
+}
+function setTab(tab){
+  state.tab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+  hideTip(); render();
+}
+function setChapter(v){ state.chapter = v; hideTip(); render(); }
+
+function applyStaticText(){
+  $('subtitle').textContent = L(UI.subtitle);
+  if($('bannerText')) $('bannerText').textContent = L(UI.banner);
+  $('hint').querySelector('span').textContent = L(UI.hint);
+  document.querySelector('.t-notes').textContent = L(UI.tNotes);
+  document.querySelector('.t-cards').textContent = L(UI.tCards);
+  document.querySelector('.t-quiz').textContent  = L(UI.tQuiz);
+  document.querySelector('.t-match').textContent = L(UI.tMatch);
+  // chapter dropdown
+  const sel = $('chapSelect'); const cur = sel.value || 'all';
+  sel.innerHTML = `<option value="all">${L(UI.allChapters)}</option>` +
+    CHAPTERS.map((c,i)=>`<option value="${i}">${i+1}. ${L(c.title)}</option>`).join('');
+  sel.value = cur;
+}
+
+/* =========================================================
+   RENDERERS
+   ========================================================= */
+function render(){
+  if(state.tab==='notes') renderNotes();
+  else if(state.tab==='cards') renderCards();
+  else if(state.tab==='quiz') renderQuiz();
+  else renderMatch();
+}
+
+/* ---- NOTES / TIMELINE ---- */
+function renderNotes(){
+  const html = activeChapters().map(c=>{
+    const i = CHAPTERS.indexOf(c);
+    const items = c.notes.map(n=>`<li>${renderText(n)}</li>`).join('');
+    return `<div class="chap-block">
+      <div class="chap-head"><span class="num">${i+1}</span><h3>${L(c.title)}</h3></div>
+      <ul class="timeline">${items}</ul></div>`;
+  }).join('');
+  $('content').innerHTML = `<div class="panel">${html}</div>`;
+}
+
+/* ---- FLASHCARDS ---- */
+let fcDeck=[], fcIndex=0, fcFlipped=false;
+function buildDeck(){
+  fcDeck = [];
+  activeChapters().forEach(c=> c.cards.forEach(card=> fcDeck.push(card)));
+  fcIndex=0; fcFlipped=false;
+}
+function renderCards(){
+  if(!fcDeck.length || fcDeckChapterKey!==deckKey()){ buildDeck(); fcDeckChapterKey=deckKey(); }
+  const card = fcDeck[fcIndex];
+  $('content').innerHTML = `
+    <div class="panel">
+      <div class="fc-stage">
+        <div class="flashcard ${fcFlipped?'flipped':''}" id="flashcard">
+          <div class="face front"><span class="lbl">${L(UI.front)}</span>
+            <div class="txt">${renderText(card.f)}</div><div class="flip-hint">${L(UI.flip)}</div></div>
+          <div class="face back"><span class="lbl">${L(UI.back)}</span>
+            <div class="txt">${renderText(card.b)}</div></div>
+        </div>
+      </div>
+      <div class="fc-controls">
+        <button class="btn ghost" onclick="fcStep(-1)">${L(UI.prev)}</button>
+        <span class="counter">${fcIndex+1} / ${fcDeck.length}</span>
+        <button class="btn ghost" onclick="fcStep(1)">${L(UI.next)}</button>
+      </div>
+      <div class="center"><button class="btn alt" onclick="fcShuffle()">${L(UI.shuffle)}</button></div>
+    </div>`;
+  $('flashcard').addEventListener('click', e=>{ if(e.target.closest('.term')) return;
+    fcFlipped=!fcFlipped; $('flashcard').classList.toggle('flipped', fcFlipped); });
+}
+let fcDeckChapterKey=null;
+const deckKey = ()=>state.chapter;
+function fcStep(d){ fcIndex=(fcIndex+d+fcDeck.length)%fcDeck.length; fcFlipped=false; renderCards(); }
+function fcShuffle(){ fcDeck=shuffle(fcDeck); fcIndex=0; fcFlipped=false; renderCards(); }
+
+/* ---- QUIZ ---- */
+let quizPool=[], quizQ=null, quizPoolKey=null;
+function buildQuizPool(){
+  quizPool=[];
+  activeChapters().forEach(c=> c.quiz.forEach(q=> quizPool.push(q)));
+  quizPool=shuffle(quizPool);
+}
+function nextQuizQuestion(){
+  if(!quizPool.length || quizPoolKey!==deckKey()){ buildQuizPool(); quizPoolKey=deckKey(); }
+  quizQ = quizPool[rand(quizPool.length)];
+  renderQuiz();
+}
+function renderQuiz(){
+  if(!quizQ || quizPoolKey!==deckKey()){ buildQuizPool(); quizPoolKey=deckKey(); quizQ=quizPool[rand(quizPool.length)]; }
+  const opts = quizQ._order || (quizQ._order = shuffle(quizQ.o.map((o,i)=>({o,i}))));
+  $('content').innerHTML = `
+    <div class="panel">
+      <div class="qscore">
+        <span class="pill">⭐ ${L(UI.score)}: ${state.score}</span>
+        <span class="pill">🔥 ${L(UI.streak)}: ${state.streak}</span>
+      </div>
+      <div class="question">${renderText(quizQ.q)}</div>
+      <div class="opts" id="opts"></div>
+      <div class="q-feedback" id="qfb">&nbsp;</div>
+    </div>`;
+  const box=$('opts');
+  opts.forEach(item=>{
+    const b=document.createElement('button');
+    b.className='opt'; b.textContent=L(item.o);
+    b.onclick=()=>answerQuiz(b, item.i);
+    box.appendChild(b);
+  });
+}
+function answerQuiz(btn, chosen){
+  if(btn.disabled) return;
+  const correct = chosen===quizQ.a;
+  document.querySelectorAll('#opts .opt').forEach((b,idx)=>{ b.disabled=true; });
+  const fb=$('qfb');
+  if(correct){
+    btn.classList.add('correct'); state.score++; state.streak++;
+    fb.textContent=L(UI.correct); fb.className='q-feedback good';
+    if(state.streak%3===0) confetti();
+  } else {
+    btn.classList.add('wrong'); state.streak=0;
+    // reveal correct
+    const correctText = L(quizQ.o[quizQ.a]);
+    document.querySelectorAll('#opts .opt').forEach(b=>{ if(b.textContent===correctText) b.classList.add('correct'); });
+    fb.textContent=L(UI.wrong)+correctText; fb.className='q-feedback bad';
+  }
+  delete quizQ._order;
+  setTimeout(nextQuizQuestion, correct?900:1800);
+}
+
+/* ---- MATCH ---- */
+let matchState=null, matchKey=null;
+function buildMatch(){
+  let pool=[];
+  activeChapters().forEach(c=> c.match.forEach(p=> pool.push(p)));
+  pool=shuffle(pool).slice(0,5);
+  matchState={ pairs:pool, left:pool.map((p,i)=>({...p,id:i})),
+               right:shuffle(pool.map((p,i)=>({...p,id:i}))), pick:null, done:0 };
+}
+function renderMatch(){
+  if(!matchState || matchKey!==deckKey()){ buildMatch(); matchKey=deckKey(); }
+  const m=matchState;
+  const col=(arr,side)=> arr.map(x=>
+    `<button class="mitem" data-side="${side}" data-id="${x.id}">${side==='L'?L(x.a):L(x.b)}</button>`).join('');
+  $('content').innerHTML=`
+    <div class="panel">
+      <p style="text-align:center;font-weight:700;margin:0 0 12px;color:var(--muted)">${L(UI.matchTip)}</p>
+      <div class="match-grid">
+        <div class="match-col" id="colL">${col(m.left,'L')}</div>
+        <div class="match-col" id="colR">${col(m.right,'R')}</div>
+      </div>
+      <div class="center" id="matchEnd"></div>
+    </div>`;
+  document.querySelectorAll('.mitem').forEach(b=> b.onclick=()=>pickMatch(b));
+}
+function pickMatch(btn){
+  const m=matchState;
+  if(btn.classList.contains('matched')) return;
+  if(!m.pick){ m.pick=btn; btn.classList.add('sel'); return; }
+  if(m.pick===btn){ btn.classList.remove('sel'); m.pick=null; return; }
+  if(m.pick.dataset.side===btn.dataset.side){ m.pick.classList.remove('sel'); m.pick=btn; btn.classList.add('sel'); return; }
+  // opposite sides -> check
+  const a=m.pick, b=btn;
+  if(a.dataset.id===b.dataset.id){
+    a.classList.remove('sel'); a.classList.add('matched'); b.classList.add('matched');
+    m.pick=null; m.done++;
+    if(m.done===m.pairs.length){ confetti(); $('matchEnd').innerHTML=
+        `<p style="font-size:20px;font-weight:800;color:var(--good)">${L(UI.matchWin)}</p>
+         <button class="btn alt" onclick="newMatch()">${L(UI.newSet)}</button>`; }
+  } else {
+    a.classList.add('miss'); b.classList.add('miss');
+    setTimeout(()=>{ a.classList.remove('miss','sel'); b.classList.remove('miss'); }, 450);
+    m.pick=null; state.streak=0;
+  }
+}
+function newMatch(){ buildMatch(); matchKey=deckKey(); renderMatch(); }
+
+/* =========================================================
+   CONFETTI
+   ========================================================= */
+function confetti(){
+  const colors=['#ff7b54','#21a0a0','#ffce3a','#2ec4b6','#5b8def','#ff5d6c'];
+  for(let i=0;i<36;i++){
+    const c=document.createElement('div'); c.className='confetti';
+    c.style.left=Math.random()*100+'vw'; c.style.background=colors[rand(colors.length)];
+    c.style.animation=`fall ${1+Math.random()*1.4}s linear forwards`;
+    if(Math.random()<.5) c.style.borderRadius='50%';
+    document.body.appendChild(c); setTimeout(()=>c.remove(),2600);
+  }
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+applyStaticText();
+render();
+</script>
+</body>
+</html>
