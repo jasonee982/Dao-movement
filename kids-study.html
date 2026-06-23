@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🚀 Fun Learning Lab — Study Games for Kids</title>
+<style>
+  :root {
+    --bg1: #ffd3e0;
+    --bg2: #c4e0ff;
+    --bg3: #d9ffd6;
+    --ink: #2b2d42;
+    --pop: #ff5d8f;
+    --pop2: #4cc9f0;
+    --good: #2ec4b6;
+    --bad: #ff6b6b;
+    --gold: #ffd23f;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body { margin: 0; height: 100%; }
+
+  body {
+    font-family: "Comic Sans MS", "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+    background-size: 300% 300%;
+    animation: drift 18s ease infinite;
+    min-height: 100%;
+    overflow-x: hidden;
+  }
+
+  @keyframes drift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 18px 16px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: clamp(28px, 7vw, 44px);
+    margin: 6px 0 2px;
+    color: #fff;
+    text-shadow: 0 3px 0 var(--pop), 0 6px 12px rgba(0,0,0,.18);
+    letter-spacing: 1px;
+  }
+
+  .subtitle { font-size: 16px; color: #3a3a55; margin: 0 0 8px; }
+
+  /* Scoreboard */
+  .scoreboard {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .chip {
+    background: #fff;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 17px;
+    font-weight: bold;
+    box-shadow: 0 4px 0 rgba(0,0,0,.08);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Menu cards */
+  .menu {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-top: 6px;
+  }
+  .game-card {
+    border: none;
+    cursor: pointer;
+    border-radius: 22px;
+    padding: 22px 14px;
+    font-family: inherit;
+    font-size: 19px;
+    font-weight: bold;
+    color: #fff;
+    box-shadow: 0 6px 0 rgba(0,0,0,.15);
+    transition: transform .12s ease, box-shadow .12s ease;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .game-card .emoji { font-size: 46px; }
+  .game-card:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.15); }
+  .game-card:hover { transform: translateY(-3px); }
+  .c-math { background: linear-gradient(160deg, #ff8fb1, #ff5d8f); }
+  .c-spell { background: linear-gradient(160deg, #6ad7ff, #4361ee); }
+  .c-count { background: linear-gradient(160deg, #8ce99a, #2ec4b6); }
+  .c-shape { background: linear-gradient(160deg, #ffd86b, #ff9f1c); }
+
+  /* Play panel */
+  .panel {
+    background: rgba(255,255,255,.85);
+    backdrop-filter: blur(4px);
+    border-radius: 26px;
+    padding: 22px 18px 26px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    text-align: center;
+    animation: pop .25s ease;
+  }
+  @keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .question {
+    font-size: clamp(34px, 9vw, 56px);
+    font-weight: bold;
+    margin: 6px 0 18px;
+    min-height: 70px;
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 8px;
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .opt {
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 28px;
+    font-weight: bold;
+    padding: 20px 8px;
+    border-radius: 18px;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 5px 0 rgba(0,0,0,.12);
+    transition: transform .1s ease;
+  }
+  .opt:active { transform: translateY(3px); }
+  .opt.correct { background: var(--good); color: #fff; animation: wob .4s; }
+  .opt.wrong { background: var(--bad); color: #fff; animation: shake .4s; }
+  .opt:disabled { cursor: default; }
+
+  @keyframes wob { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-4deg) scale(1.05)} 75%{transform:rotate(4deg) scale(1.05)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+
+  .feedback {
+    font-size: 24px;
+    font-weight: bold;
+    min-height: 34px;
+    margin: 16px 0 4px;
+  }
+  .feedback.good { color: var(--good); }
+  .feedback.bad { color: var(--bad); }
+
+  .controls {
+    display: flex; justify-content: center; gap: 10px; margin-top: 16px; flex-wrap: wrap;
+  }
+  .btn {
+    border: none; cursor: pointer; font-family: inherit; font-weight: bold;
+    font-size: 17px; padding: 12px 22px; border-radius: 999px;
+    background: var(--ink); color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,.2);
+    transition: transform .1s ease;
+  }
+  .btn:active { transform: translateY(3px); }
+  .btn.ghost { background: #fff; color: var(--ink); }
+
+  /* level pills */
+  .levels { display: flex; justify-content: center; gap: 8px; margin: 0 0 6px; }
+  .level-pill {
+    border: 3px solid #fff; background: rgba(255,255,255,.5); color: var(--ink);
+    font-family: inherit; font-weight: bold; font-size: 15px; cursor: pointer;
+    padding: 6px 14px; border-radius: 999px;
+  }
+  .level-pill.active { background: var(--pop); color: #fff; border-color: var(--pop); }
+
+  .hidden { display: none !important; }
+
+  /* confetti */
+  .confetti {
+    position: fixed; top: -20px; width: 12px; height: 12px; z-index: 50;
+    border-radius: 3px; pointer-events: none;
+  }
+  @keyframes fall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 1; }
+  }
+
+  footer {
+    text-align: center; margin-top: 26px; color: #4a4a66; font-size: 13px;
+  }
+
+  .star-burst { animation: burst .5s ease; display:inline-block; }
+  @keyframes burst { 0%{transform:scale(0) rotate(-30deg)} 60%{transform:scale(1.4)} 100%{transform:scale(1)} }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🚀 Fun Learning Lab</h1>
+      <p class="subtitle">Pick a game and become a superstar! ⭐</p>
+      <div class="scoreboard">
+        <div class="chip">⭐ <span id="score">0</span></div>
+        <div class="chip">🔥 Streak <span id="streak">0</span></div>
+        <div class="chip">🏆 Best <span id="best">0</span></div>
+      </div>
+    </header>
+
+    <!-- MENU -->
+    <main id="menu" class="menu">
+      <button class="game-card c-math" onclick="startGame('math')">
+        <span class="emoji">🔢</span> Math Magic
+      </button>
+      <button class="game-card c-spell" onclick="startGame('spell')">
+        <span class="emoji">🔤</span> Spelling Bee
+      </button>
+      <button class="game-card c-count" onclick="startGame('count')">
+        <span class="emoji">🍎</span> Count It!
+      </button>
+      <button class="game-card c-shape" onclick="startGame('shape')">
+        <span class="emoji">🔷</span> Shape Spy
+      </button>
+    </main>
+
+    <!-- PLAY -->
+    <section id="play" class="panel hidden">
+      <div class="levels" id="levels">
+        <button class="level-pill active" data-level="1" onclick="setLevel(1)">😀 Easy</button>
+        <button class="level-pill" data-level="2" onclick="setLevel(2)">😎 Medium</button>
+        <button class="level-pill" data-level="3" onclick="setLevel(3)">🤯 Hard</button>
+      </div>
+      <div class="question" id="question">…</div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback">&nbsp;</div>
+      <div class="controls">
+        <button class="btn ghost" onclick="goMenu()">⬅ Menu</button>
+        <button class="btn" id="nextBtn" onclick="nextQuestion()">Next ➡</button>
+      </div>
+    </section>
+
+    <footer>Made with ❤️ for curious kids • No internet needed — works offline!</footer>
+  </div>
+
+<script>
+/* ---------- State ---------- */
+const state = {
+  game: null,
+  level: 1,
+  score: 0,
+  streak: 0,
+  best: Number(localStorage.getItem('fll_best') || 0),
+  answered: false,
+  correctAnswer: null,
+};
+
+const el = (id) => document.getElementById(id);
+document.addEventListener('DOMContentLoaded', () => { el('best').textContent = state.best; });
+
+/* ---------- Sound (Web Audio, no files needed) ---------- */
+let audioCtx;
+function beep(freq, dur = 0.15, type = 'sine', vol = 0.2) {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.value = vol;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.stop(audioCtx.currentTime + dur);
+  } catch (e) {}
+}
+function happySound() { [523, 659, 784].forEach((f, i) => setTimeout(() => beep(f, 0.18, 'triangle'), i * 90)); }
+function sadSound() { beep(220, 0.25, 'sawtooth', 0.15); setTimeout(() => beep(180, 0.3, 'sawtooth', 0.15), 120); }
+
+/* ---------- Helpers ---------- */
+const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const shuffle = (a) => a.sort(() => Math.random() - 0.5);
+const sample = (a) => a[rand(0, a.length - 1)];
+
+const CHEERS = ['Awesome! 🌟', 'You did it! 🎉', 'Super smart! 🧠', 'Way to go! 🚀', 'Brilliant! ✨', 'High five! 🙌'];
+const TRY_AGAIN = ['Oops, try the next one! 💪', 'Almost! Keep going! 🌈', 'Nice try! 😊', 'You\'ll get the next! 👍'];
+
+/* ---------- Navigation ---------- */
+function startGame(game) {
+  state.game = game;
+  el('menu').classList.add('hidden');
+  el('play').classList.remove('hidden');
+  // Spelling/shape don't use number levels the same way, but levels still tune difficulty
+  nextQuestion();
+}
+function goMenu() {
+  el('play').classList.add('hidden');
+  el('menu').classList.remove('hidden');
+}
+function setLevel(lvl) {
+  state.level = lvl;
+  document.querySelectorAll('.level-pill').forEach(p =>
+    p.classList.toggle('active', Number(p.dataset.level) === lvl));
+  nextQuestion();
+}
+
+/* ---------- Question builders ---------- */
+function buildMath() {
+  const max = state.level === 1 ? 9 : state.level === 2 ? 20 : 50;
+  const ops = state.level === 3 ? ['+', '-', '×'] : ['+', '-'];
+  const op = sample(ops);
+  let a = rand(1, max), b = rand(1, max), ans;
+  if (op === '+') ans = a + b;
+  if (op === '-') { if (b > a) [a, b] = [b, a]; ans = a - b; }
+  if (op === '×') { a = rand(2, state.level === 3 ? 9 : 5); b = rand(2, 9); ans = a * b; }
+  return { q: `${a} ${op} ${b} = ?`, ans, fmt: 'big' };
+}
+
+const WORDS = {
+  1: ['cat', 'dog', 'sun', 'hat', 'bee', 'pig', 'cup', 'box'],
+  2: ['apple', 'tiger', 'house', 'water', 'happy', 'green', 'mouse', 'plant'],
+  3: ['rainbow', 'dolphin', 'kitchen', 'morning', 'picture', 'monster', 'pumpkin', 'dinosaur'],
+};
+function buildSpell() {
+  const word = sample(WORDS[state.level]);
+  // remove one letter; ask which letter fills the blank
+  const i = rand(0, word.length - 1);
+  const missing = word[i];
+  const shown = word.slice(0, i) + '_' + word.slice(i + 1);
+  return { q: `🐝 Fill the blank:  ${shown.toUpperCase()}`, ans: missing.toUpperCase(), fmt: 'word', kind: 'letters' };
+}
+
+const EMO = ['🍎', '🐶', '⭐', '🍓', '🐠', '🌸', '🎈', '🐝', '🍌', '🚗'];
+function buildCount() {
+  const max = state.level === 1 ? 5 : state.level === 2 ? 9 : 15;
+  const n = rand(1, max);
+  const emo = sample(EMO);
+  return { q: emo.repeat(n), ans: n, fmt: 'emoji' };
+}
+
+const SHAPES = [
+  { name: 'Circle', svg: '<circle cx="50" cy="50" r="38" />' },
+  { name: 'Square', svg: '<rect x="14" y="14" width="72" height="72" rx="6" />' },
+  { name: 'Triangle', svg: '<polygon points="50,12 88,86 12,86" />' },
+  { name: 'Star', svg: '<polygon points="50,8 61,38 93,38 67,58 77,90 50,70 23,90 33,58 7,38 39,38" />' },
+  { name: 'Heart', svg: '<path d="M50 86 L18 52 a18 18 0 0 1 32-14 a18 18 0 0 1 32 14 Z" />' },
+  { name: 'Diamond', svg: '<polygon points="50,10 90,50 50,90 10,50" />' },
+];
+function buildShape() {
+  const s = sample(SHAPES);
+  const color = sample(['#ff5d8f', '#4cc9f0', '#2ec4b6', '#ff9f1c', '#9b5de5']);
+  const svg = `<svg viewBox="0 0 100 100" width="120" height="120"><g fill="${color}">${s.svg}</g></svg>`;
+  return { q: svg, ans: s.name, fmt: 'svg', kind: 'shapes' };
+}
+
+/* ---------- Render a question ---------- */
+function nextQuestion() {
+  state.answered = false;
+  el('feedback').textContent = ' ';
+  el('feedback').className = 'feedback';
+
+  let data;
+  if (state.game === 'math') data = buildMath();
+  else if (state.game === 'spell') data = buildSpell();
+  else if (state.game === 'count') data = buildCount();
+  else data = buildShape();
+
+  state.correctAnswer = data.ans;
+  el('question').innerHTML = data.q;
+  el('question').style.fontSize = data.fmt === 'emoji'
+    ? 'clamp(30px, 8vw, 46px)'
+    : data.fmt === 'word' ? 'clamp(26px, 7vw, 40px)' : '';
+
+  // Build distractor options
+  let options = [data.ans];
+  if (data.kind === 'letters') {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    while (options.length < 4) {
+      const c = sample(letters);
+      if (!options.includes(c)) options.push(c);
+    }
+  } else if (data.kind === 'shapes') {
+    const names = shuffle(SHAPES.map(s => s.name).filter(n => n !== data.ans));
+    options.push(names[0], names[1], names[2]);
+  } else {
+    // numeric distractors
+    const seen = new Set([data.ans]);
+    while (options.length < 4) {
+      const delta = rand(1, Math.max(3, Math.round(data.ans * 0.4) + 2));
+      const cand = Math.random() < 0.5 ? data.ans + delta : data.ans - delta;
+      if (cand >= 0 && !seen.has(cand)) { seen.add(cand); options.push(cand); }
+    }
+  }
+  options = shuffle(options);
+
+  const box = el('options');
+  box.innerHTML = '';
+  options.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.textContent = o;
+    b.onclick = () => checkAnswer(b, o);
+    box.appendChild(b);
+  });
+}
+
+/* ---------- Answer checking ---------- */
+function checkAnswer(btn, choice) {
+  if (state.answered) return;
+  state.answered = true;
+  const isRight = String(choice) === String(state.correctAnswer);
+
+  document.querySelectorAll('.opt').forEach(b => {
+    b.disabled = true;
+    if (String(b.textContent) === String(state.correctAnswer)) b.classList.add('correct');
+  });
+
+  const fb = el('feedback');
+  if (isRight) {
+    btn.classList.add('correct');
+    state.score++; state.streak++;
+    if (state.streak > state.best) {
+      state.best = state.streak;
+      localStorage.setItem('fll_best', state.best);
+    }
+    fb.textContent = sample(CHEERS);
+    fb.className = 'feedback good';
+    happySound();
+    if (state.streak > 0 && state.streak % 3 === 0) confetti();
+  } else {
+    btn.classList.add('wrong');
+    state.streak = 0;
+    fb.innerHTML = sample(TRY_AGAIN) + ` <span class="star-burst">The answer is <b>${state.correctAnswer}</b></span>`;
+    fb.className = 'feedback bad';
+    sadSound();
+  }
+  updateScoreboard();
+
+  // auto-advance after a short pause
+  clearTimeout(window._adv);
+  window._adv = setTimeout(nextQuestion, isRight ? 900 : 1700);
+}
+
+function updateScoreboard() {
+  el('score').textContent = state.score;
+  el('streak').textContent = state.streak;
+  el('best').textContent = state.best;
+}
+
+/* ---------- Confetti ---------- */
+function confetti() {
+  const colors = ['#ff5d8f', '#4cc9f0', '#2ec4b6', '#ffd23f', '#9b5de5', '#ff9f1c'];
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = sample(colors);
+    c.style.animation = `fall ${1 + Math.random() * 1.5}s linear forwards`;
+    c.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() < 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2600);
+  }
+}
+</script>
+</body>
+</html>
