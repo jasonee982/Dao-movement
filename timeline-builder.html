@@ -164,8 +164,8 @@ input[type=range]{width:100%; accent-color:var(--ui-accent)}
 
 /* ---------- 1. HORIZONTAL ALTERNATING ---------- */
 .tl-halt{position:relative; padding:14px 6px; overflow-x:auto}
-.halt-line{position:absolute; left:24px; right:24px; top:50%; height:.2em; background:var(--line-bg); transform:translateY(-50%); border-radius:4px}
 .halt-track{display:flex; gap:26px; min-width:max-content; position:relative; padding:0 14px}
+.halt-line{position:absolute; left:14px; right:14px; top:50%; height:.2em; background:var(--line-bg); transform:translateY(-50%); border-radius:4px; z-index:0}
 .halt-item{position:relative; width:220px; min-height:330px; display:flex; align-items:center; justify-content:center}
 .halt-card{position:absolute; width:100%}
 .halt-item.above .halt-card{bottom:calc(50% + 2.6em)}
@@ -175,16 +175,17 @@ input[type=range]{width:100%; accent-color:var(--ui-accent)}
 .halt-item.below .halt-stem{top:50%; height:2.6em}
 
 /* ---------- 2. HORIZONTAL STEPS (numbered) ---------- */
-.tl-steps{position:relative; display:flex; gap:20px; padding:30px 10px 10px; overflow-x:auto}
-.step-item{flex:1 1 0; min-width:170px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative}
+.tl-steps{position:relative; padding:30px 10px 10px; overflow-x:auto}
+.step-track{display:flex; gap:20px; width:100%; min-width:max-content; position:relative}
+.step-item{flex:1 1 160px; min-width:160px; display:flex; flex-direction:column; align-items:center; text-align:center; position:relative}
 .step-line{position:absolute; left:10%; right:10%; top:calc(30px + 1.15em); height:.18em; background:var(--line-bg); z-index:0; border-radius:4px}
 .step-item .marker{margin-bottom:14px}
 .step-item .card{width:100%}
 
 /* ---------- 3. ROADMAP PILLS ---------- */
 .tl-road{position:relative; padding:40px 8px; overflow-x:auto}
-.road-line{position:absolute; left:30px; right:30px; top:50%; height:.5em; background:var(--line-bg); transform:translateY(-50%); border-radius:20px; opacity:.9}
 .road-track{display:flex; gap:14px; min-width:max-content; position:relative; padding:0 20px}
+.road-line{position:absolute; left:20px; right:20px; top:50%; height:.5em; background:var(--line-bg); transform:translateY(-50%); border-radius:20px; opacity:.9; z-index:0}
 .road-item{position:relative; width:200px; display:flex; flex-direction:column; align-items:center}
 .road-item .pill{background:var(--node-bg); color:#fff; font-weight:800; padding:.5em 1.1em; border-radius:30px; font-size:.95em; box-shadow:0 10px 24px rgba(0,0,0,.22); z-index:2; display:flex; align-items:center; gap:.5em; white-space:nowrap}
 .road-item .pill .n{background:rgba(255,255,255,.25); width:1.5em; height:1.5em; border-radius:50%; display:grid; place-items:center; font-size:.82em}
@@ -198,7 +199,7 @@ input[type=range]{width:100%; accent-color:var(--ui-accent)}
 .tl-zig{position:relative; max-width:840px; margin:0 auto; padding:10px 0}
 .zig-line{position:absolute; left:50%; top:0; bottom:0; width:.18em; background:var(--line-bg); transform:translateX(-50%)}
 .zig-item{position:relative; display:grid; grid-template-columns:1fr 2.6em 1fr; align-items:center; margin-bottom:26px}
-.zig-item .marker{justify-self:center}
+.zig-item .marker{grid-column:2; justify-self:center}
 .zig-item .card{grid-column:1; margin-right:8px}
 .zig-item.right .card{grid-column:3; margin-right:0; margin-left:8px}
 @media (max-width:560px){
@@ -242,7 +243,7 @@ footer.credit{margin-top:30px; text-align:center; color:var(--muted); font-size:
 
 <div class="app-bar">
   <div class="logo"><span class="dot">⏱</span> Timeline Builder</div>
-  <span class="hint">Choose a template · pick a theme · export</span>
+  <span class="hint">Choose a template · pick a theme · export <b style="color:var(--ui-accent)">· build 4</b></span>
   <div class="spacer"></div>
   <button class="btn ghost" id="btnSample">↺ Sample</button>
   <button class="btn ghost" id="btnImport">⤓ Import</button>
@@ -332,6 +333,17 @@ footer.credit{margin-top:30px; text-align:center; color:var(--muted); font-size:
 
         <label class="fld">Size <span id="sizeVal" style="color:var(--ui-muted)"></span></label>
         <input type="range" id="rngSize" min="0.8" max="1.3" step="0.05">
+
+        <label class="fld">Export image size (PNG / Excel picture)</label>
+        <select class="input" id="selExport">
+          <option value="auto">Auto — fit content</option>
+          <option value="ppt-169-1080">PowerPoint 16:9 — 1920×1080</option>
+          <option value="ppt-169-720">PowerPoint 16:9 — 1280×720</option>
+          <option value="ppt-43">PowerPoint 4:3 — 1024×768</option>
+          <option value="a4-land">A4 Landscape — 1754×1240</option>
+          <option value="a4-port">A4 Portrait — 1240×1754</option>
+        </select>
+        <div style="font-size:11px;color:var(--ui-muted);margin-top:6px;line-height:1.45">Fits the whole timeline into a fixed slide-sized image, centred with padding — drop straight onto a slide.</div>
       </div>
     </details>
 
@@ -387,6 +399,16 @@ const FONTS = {
   rounded:"'Avenir Next','Segoe UI',system-ui,'Helvetica Neue',sans-serif",
   display:"'Trebuchet MS','Gill Sans',Verdana,system-ui,sans-serif",
   mono:"'SF Mono',ui-monospace,Menlo,Consolas,'Courier New',monospace",
+};
+
+// Export image sizes — fit the timeline into a fixed canvas (great for slides).
+const EXPORT_SIZES = {
+  auto:           {name:'Auto — fit content',            w:0,    h:0   },
+  'ppt-169-1080': {name:'PowerPoint 16:9 — 1920×1080',   w:1920, h:1080},
+  'ppt-169-720':  {name:'PowerPoint 16:9 — 1280×720',    w:1280, h:720 },
+  'ppt-43':       {name:'PowerPoint 4:3 — 1024×768',     w:1024, h:768 },
+  'a4-land':      {name:'A4 Landscape — 1754×1240',      w:1754, h:1240},
+  'a4-port':      {name:'A4 Portrait — 1240×1754',       w:1240, h:1754},
 };
 
 const SAMPLE = {
@@ -456,12 +478,12 @@ const LAYOUTS = {
         <div class="halt-stem"></div>
         ${marker(i,e)}
       </div>`).join('');
-    return `<div class="tl-halt"><div class="halt-line"></div><div class="halt-track">${items}</div></div>`;
+    return `<div class="tl-halt"><div class="halt-track"><div class="halt-line"></div>${items}</div></div>`;
   },
   'h-steps'(ev){
     const items = ev.map((e,i)=>`
       <div class="step-item">${marker(i,e)}<div class="${cardCls()}">${cardInner(e)}</div></div>`).join('');
-    return `<div class="tl-steps"><div class="step-line"></div>${items}</div>`;
+    return `<div class="tl-steps"><div class="step-track"><div class="step-line"></div>${items}</div></div>`;
   },
   'road'(ev){
     const items = ev.map((e,i)=>`
@@ -473,7 +495,7 @@ const LAYOUTS = {
           ${e.desc?`<p class="ev-desc">${esc(e.desc)}</p>`:''}
         </div>
       </div>`).join('');
-    return `<div class="tl-road"><div class="road-line"></div><div class="road-track">${items}</div></div>`;
+    return `<div class="tl-road"><div class="road-track"><div class="road-line"></div>${items}</div></div>`;
   },
   'v-zig'(ev){
     const items = ev.map((e,i)=>`
@@ -509,7 +531,42 @@ function renderPreview(){
     ? (LAYOUTS[state.layout]||LAYOUTS['h-alt'])(state.events)
     : `<div class="tl-empty">No events yet — add one from the panel on the left.</div>`;
   preview.innerHTML = head + body + `<footer class="credit">Made with Timeline Builder</footer>`;
+  fitLines();
   save();
+}
+
+/* Size each connector line to span exactly from the first node to the last,
+   so it never falls short (horizontal) or dangles past the ends (vertical). */
+function fitLines(){
+  const defs = [
+    {tl:'.tl-halt',  line:'.halt-line', anchor:'.marker',    base:'.halt-track',  vert:false},
+    {tl:'.tl-road',  line:'.road-line', anchor:'.road-stem', base:'.road-track',  vert:false},
+    {tl:'.tl-steps', line:'.step-line', anchor:'.marker',    base:'.step-track',  vert:false},
+    {tl:'.tl-zig',   line:'.zig-line',  anchor:'.marker',    base:'.tl-zig',      vert:true},
+    {tl:'.tl-rail',  line:'.rail-line', anchor:'.marker',    base:'.tl-rail',     vert:true},
+    {tl:'.tl-two',   line:'.two-line',  anchor:'.marker',    base:'.tl-two',      vert:true},
+  ];
+  for(const d of defs){
+    const tl = preview.querySelector(d.tl); if(!tl) continue;
+    const line = preview.querySelector(d.line);
+    const baseEl = preview.querySelector(d.base);
+    const anchors = tl.querySelectorAll(d.anchor);
+    if(!line || !baseEl || anchors.length===0) continue;
+    const b = baseEl.getBoundingClientRect();
+    const a0 = anchors[0].getBoundingClientRect();
+    const a1 = anchors[anchors.length-1].getBoundingClientRect();
+    if(d.vert){
+      const top = (a0.top + a0.height/2) - b.top;
+      const bottom = (a1.top + a1.height/2) - b.top;
+      line.style.top = top+'px'; line.style.bottom = 'auto';
+      line.style.height = Math.max(0, bottom-top)+'px';
+    } else {
+      const left = (a0.left + a0.width/2) - b.left;
+      const right = (a1.left + a1.width/2) - b.left;
+      line.style.left = left+'px'; line.style.right = 'auto';
+      line.style.width = Math.max(0, right-left)+'px';
+    }
+  }
 }
 
 /* ============================================================
@@ -599,6 +656,7 @@ function syncControls(){
   document.getElementById('cSurface').value = state.surface;
   document.getElementById('cText').value    = state.text;
   document.getElementById('selFont').value  = state.font;
+  document.getElementById('selExport').value = state.export||'auto';
   document.getElementById('rngSize').value  = state.size;
   document.getElementById('sizeVal').textContent = Math.round(state.size*100)+'%';
   setSwitch(document.getElementById('swDark'), state.dark);
@@ -617,6 +675,7 @@ function bind(){
   cl('cAccent','accent'); cl('cAccent2','accent2'); cl('cBg','bg'); cl('cSurface','surface'); cl('cText','text');
 
   document.getElementById('selFont').onchange = e=>{ state.font=e.target.value; renderPreview(); };
+  document.getElementById('selExport').onchange = e=>{ state.export=e.target.value; save(); };
   document.getElementById('rngSize').oninput = e=>{ state.size=+e.target.value; document.getElementById('sizeVal').textContent=Math.round(state.size*100)+'%'; renderPreview(); };
 
   document.getElementById('swDark').onclick = function(){
@@ -652,6 +711,7 @@ function bind(){
   document.getElementById('btnPDF').onclick = ()=>window.print();
   document.getElementById('btnPNG').onclick = exportPNG;
   document.getElementById('btnXLSX').onclick = exportXLSX;
+  window.addEventListener('resize', fitLines);
 }
 
 /* ============================================================
@@ -917,15 +977,29 @@ function timelineToCanvas(){
   return new Promise((resolve,reject)=>{
     try{
       const {svg,w,h} = buildSVG();
+      const target = EXPORT_SIZES[state.export]||EXPORT_SIZES.auto;
       const url = URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
       const im = new Image();
       im.onload = ()=>{
         const scale = 2;
         const cv = document.createElement('canvas');
-        cv.width = w*scale; cv.height = h*scale;
-        const ctx = cv.getContext('2d'); ctx.scale(scale,scale); ctx.drawImage(im,0,0);
-        URL.revokeObjectURL(url);
-        resolve({cv,w,h});
+        const ctx = cv.getContext('2d');
+        if(target.w){
+          // Fit the timeline inside a fixed slide-sized canvas, centred with padding.
+          cv.width = target.w*scale; cv.height = target.h*scale;
+          ctx.scale(scale,scale);
+          ctx.fillStyle = state.bg; ctx.fillRect(0,0,target.w,target.h);
+          const k = Math.min(target.w/w, target.h/h) * 0.94;
+          const dw = w*k, dh = h*k;
+          ctx.drawImage(im, (target.w-dw)/2, (target.h-dh)/2, dw, dh);
+          URL.revokeObjectURL(url);
+          resolve({cv, w:target.w, h:target.h});
+        } else {
+          cv.width = w*scale; cv.height = h*scale;
+          ctx.scale(scale,scale); ctx.drawImage(im,0,0);
+          URL.revokeObjectURL(url);
+          resolve({cv,w,h});
+        }
       };
       im.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error('rasterise failed')); };
       im.src = url;
